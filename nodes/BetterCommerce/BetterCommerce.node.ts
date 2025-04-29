@@ -16,7 +16,7 @@ export class BetterCommerce implements INodeType {
     description: INodeTypeDescription = {
         displayName: 'BetterCommerce',
         name: 'betterCommerce',
-        icon: 'file:bettercommerce.svg',
+        icon: 'file:logo.svg',
         group: ['transform'],
         version: 1,
         description: 'Manage products, orders, customers, etc. in BetterCommerce',

@@ -222,7 +222,7 @@ export const betterCommerceProperties: INodeProperties[] = [
         displayOptions: {
         show: {
             resource: ['baskets'],
-            operation: ['getById','addItem','updateShippingAddress', 'getShippingMethods', 'updateShippingMethod', 'getPaymentMethods'],
+            operation: ['getById','updateUser','addItem','updateShippingAddress', 'getShippingMethods', 'updateShippingMethod', 'getPaymentMethods'],
         },
         },
         description: 'basket ID',
@@ -350,5 +350,17 @@ export const betterCommerceProperties: INodeProperties[] = [
         },
         },
     },
-
+    {
+        displayName: 'User Id',
+        name: 'userId',
+        type: 'string',
+        default: '',
+        required: true,
+        displayOptions: {
+        show: {
+            resource: ['baskets'],
+            operation: ['updateUser'],
+        },
+        },
+    },
 ];

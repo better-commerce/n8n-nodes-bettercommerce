@@ -58,27 +58,33 @@ export const endpointConfigs:EndpointConfigs  = {
 		pathParams: ['id']
 	
 	},
-
+	'baskets.updateUser': {
+		endpoint: '/api/v2/commerce/basket/{id}/user',
+		method: 'PUT',
+		pathParams: ['id'],
+		queryParams: ['userId']
+	
+	},
   'baskets.updateShippingAddress': {
-    endpoint: '/api/v2/checkout/address-shipping/{id}',
+    endpoint: '/api/v2/commerce/checkout/{id}/addresss',
     method: 'PUT',
     pathParams: ['id'],
     bodyParam: ['addressLine1', 'addressLine2', 'city', 'postcode', 'country'],
   },
   'baskets.getShippingMethods': {
-    endpoint: '/api/v2/checkout/{id}/shipping-methods',
+    endpoint: '/api/v2/commerce/checkout/{id}/shipping-methods',
     method: 'GET',
     pathParams: ['id'],
 	queryParams: ['countryCode','postCode'],
   },
   'baskets.updateShippingMethod': {
-    endpoint: '/api/v2/checkout/{id}/shipping-method',
+    endpoint: '/api/v2/commerce/checkout/{id}/shipping-method',
     method: 'PUT',
     pathParams: ['id'],
     queryParams: ['shippingMethodId','countryCode'],
   },
   'baskets.getPaymentMethods': {
-    endpoint: '/api/v2/checkout/paymentmethods/{id}',
+    endpoint: '/api/v2/commerce/checkout/paymentmethods/{id}',
     method: 'GET',
     pathParams: ['id'],
   },
