@@ -9,6 +9,7 @@ export const betterCommerceProperties: INodeProperties[] = [
             { name: 'Products', value: 'products' },
             { name: 'Customers', value: 'customers' },
             { name: 'Baskets', value: 'baskets' },
+            { name: 'Checkout', value: 'checkouts' },
           //{ name: 'Orders', value: 'orders' },
             //{ name: 'Companies', value: 'companies' },
             { name: 'Quotes', value: 'quotes' },
@@ -59,13 +60,33 @@ export const betterCommerceProperties: INodeProperties[] = [
             { name: 'Get By Id', value: 'getById' },
             { name: 'Add Item', value: 'addItem' },
             { name: 'Update User', value: 'updateUser' },
-            { name: 'Update Shipping Address', value: 'updateShippingAddress' },
-            { name: 'Get Shipping Methods', value: 'getShippingMethods' },
-            { name: 'Update Shipping Method', value: 'updateShippingMethod' },
-            { name: 'Get Payment Methods', value: 'getPaymentMethods' },
+            // { name: 'Update Shipping Address', value: 'updateShippingAddress' },
+            // { name: 'Update Billing Address', value: 'updateBillingAddress' },
+            // { name: 'Get Shipping Methods', value: 'getShippingMethods' },
+            // { name: 'Update Shipping Method', value: 'updateShippingMethod' },
+            // { name: 'Get Payment Methods', value: 'getPaymentMethods' },
         ],
         displayOptions:{
             show:{ resource: ['baskets']}
+
+        },
+        default: 'addItems',
+        description: 'The operation to perform.',
+    },
+    {
+        displayName: 'Action',
+        name: 'operation',
+        type: 'options',
+        options: [
+            { name: 'Update Shipping Address', value: 'updateShippingAddress' },
+            { name: 'Update Billing Address', value: 'updateBillingAddress' },
+            { name: 'Get Shipping Methods', value: 'getShippingMethods' },
+            { name: 'Update Shipping Method', value: 'updateShippingMethod' },
+            { name: 'Get Payment Methods', value: 'getPaymentMethods' },
+            { name: 'Convert to Order', value: 'convertToOrder' },
+        ],
+        displayOptions:{
+            show:{ resource: ['checkouts']}
 
         },
         default: 'addItems',
@@ -141,6 +162,7 @@ export const betterCommerceProperties: INodeProperties[] = [
             },
         },
     },
+    // search start 
     {
         displayName: 'Phone',
         name: 'phone',
@@ -151,7 +173,7 @@ export const betterCommerceProperties: INodeProperties[] = [
         displayOptions: {
             show: {
                 resource: ['customers'],
-                operation: ['create'],
+                operation: ['search'],
             },
         },
     },
@@ -165,7 +187,7 @@ export const betterCommerceProperties: INodeProperties[] = [
         displayOptions: {
             show: {
                 resource: ['customers'],
-                operation: ['create','search'],
+                operation: ['search'],
             },
         },
     },
@@ -179,7 +201,51 @@ export const betterCommerceProperties: INodeProperties[] = [
         displayOptions: {
             show: {
                 resource: ['customers'],
-                operation: ['create','search'],
+                operation: ['search'],
+            },
+        },
+    },
+
+    // search end
+    {
+        displayName: 'Phone',
+        name: 'telephone',
+        type: 'string',
+        default: '',
+        required: false,
+        description: 'The phone number of the customer',
+        displayOptions: {
+            show: {
+                resource: ['customers'],
+                operation: ['create'],
+            },
+        },
+    },
+    {
+        displayName: 'First Name',
+        name: 'firstName',
+        type: 'string',
+        default: '',
+        required: false,
+        description: 'The first name of the customer',
+        displayOptions: {
+            show: {
+                resource: ['customers','baskets','checkouts'],
+                operation: ['create','search','updateShippingAddress','updateBillingAddress'],
+            },
+        },
+    },
+    {
+        displayName: 'Last Name',
+        name: 'lastName',
+        type: 'string',
+        default: '',
+        required: false,
+        description: 'The last name of the customer',
+        displayOptions: {
+            show: {
+                resource: ['customers','baskets','checkouts'],
+                operation: ['create','search','updateShippingAddress','updateBillingAddress'],
             },
         },
     },
@@ -221,8 +287,8 @@ export const betterCommerceProperties: INodeProperties[] = [
         required: true,
         displayOptions: {
         show: {
-            resource: ['baskets'],
-            operation: ['getById','updateUser','addItem','updateShippingAddress', 'getShippingMethods', 'updateShippingMethod', 'getPaymentMethods'],
+            resource: ['baskets','checkouts'],
+            operation: ['getById','updateUser','addItem','updateShippingAddress','updateBillingAddress', 'getShippingMethods', 'updateShippingMethod','convertToOrder'],
         },
         },
         description: 'basket ID',
@@ -257,29 +323,56 @@ export const betterCommerceProperties: INodeProperties[] = [
     },
     
     // Address fields for Update Shipping Address
+    //   bodyParam: ['title','firstName','lastName','companyName', 'address1', 'address2', 'city','state', 'postcode', 'countryCode','phoneNo']
     {
-        displayName: 'Address Line 1',
-        name: 'addressLine1',
-        type: 'string',
-        default: '',
-        required: true,
-        displayOptions: {
-        show: {
-            resource: ['baskets'],
-            operation: ['updateShippingAddress'],
-        },
-        },
-    },
-    {
-        displayName: 'Address Line 2',
-        name: 'addressLine2',
+        displayName: 'Title',
+        name: 'title',
         type: 'string',
         default: '',
         required: false,
         displayOptions: {
         show: {
-            resource: ['baskets'],
-            operation: ['updateShippingAddress'],
+            resource: ['checkouts'],
+            operation: ['updateShippingAddress','updateBillingAddress'],
+        },
+        },
+    },
+    {
+        displayName: 'Company',
+        name: 'companyName',
+        type: 'string',
+        default: '',
+        required: false,
+        displayOptions: {
+        show: {
+            resource: ['checkouts'],
+            operation: ['updateShippingAddress','updateBillingAddress'],
+        },
+        },
+    },
+    {
+        displayName: 'Address Line 1',
+        name: 'address1',
+        type: 'string',
+        default: '',
+        required: true,
+        displayOptions: {
+        show: {
+            resource: ['checkouts'],
+            operation: ['updateShippingAddress','updateBillingAddress'],
+        },
+        },
+    },
+    {
+        displayName: 'Address Line 2',
+        name: 'address2',
+        type: 'string',
+        default: '',
+        required: false,
+        displayOptions: {
+        show: {
+            resource: ['checkouts'],
+            operation: ['updateShippingAddress','updateBillingAddress'],
         },
         },
     },
@@ -291,8 +384,21 @@ export const betterCommerceProperties: INodeProperties[] = [
         required: true,
         displayOptions: {
         show: {
-            resource: ['baskets'],
-            operation: ['updateShippingAddress'],
+            resource: ['checkouts'],
+            operation: ['updateShippingAddress','updateBillingAddress'],
+        },
+        },
+    },
+    {
+        displayName: 'State',
+        name: 'state',
+        type: 'string',
+        default: '',
+        required: false,
+        displayOptions: {
+        show: {
+            resource: ['checkouts'],
+            operation: ['updateShippingAddress','updateBillingAddress'],
         },
         },
     },
@@ -304,25 +410,52 @@ export const betterCommerceProperties: INodeProperties[] = [
         required: true,
         displayOptions: {
         show: {
-            resource: ['baskets'],
-            operation: ['updateShippingAddress'],
+            resource: ['checkouts'],
+            operation: ['updateShippingAddress','updateBillingAddress','getShippingMethods'],
         },
         },
     },
     {
-        displayName: 'Country',
-        name: 'country',
+        displayName: 'Country Code',
+        name: 'countryCode',
         type: 'string',
         default: '',
         required: true,
         displayOptions: {
         show: {
-            resource: ['baskets'],
-            operation: ['updateShippingAddress'],
+            resource: ['checkouts'],
+            operation: ['updateShippingAddress','updateBillingAddress'],
         },
         },
     },
-    
+    {
+        displayName: 'Phone',
+        name: 'phoneNo',
+        type: 'string',
+        default: '',
+        required: false,
+        description: 'The phone number of the customer',
+        displayOptions: {
+            show: {
+                resource: ['checkouts'],
+                operation: ['updateShippingAddress','updateBillingAddress'],
+            },
+        },
+    },
+    {
+        displayName: 'Same as shipping',
+        name: 'sameAsShipping',
+        type: 'boolean',
+        default: false,
+        required: false,
+        description: 'The phone number of the customer',
+        displayOptions: {
+            show: {
+                resource: ['checkouts'],
+                operation: ['updateBillingAddress'],
+            },
+        },
+    },
     // Shipping Method field for Update Shipping Method
     {
         displayName: 'Shipping Method ID',
@@ -332,7 +465,7 @@ export const betterCommerceProperties: INodeProperties[] = [
         required: true,
         displayOptions: {
         show: {
-            resource: ['baskets'],
+            resource: ['checkouts'],
             operation: ['updateShippingMethod'],
         },
         },
@@ -345,8 +478,8 @@ export const betterCommerceProperties: INodeProperties[] = [
         required: true,
         displayOptions: {
         show: {
-            resource: ['baskets'],
-            operation: ['updateShippingMethod'],
+            resource: ['checkouts'],
+            operation: ['updateShippingMethod','getShippingMethods'],
         },
         },
     },
@@ -363,4 +496,46 @@ export const betterCommerceProperties: INodeProperties[] = [
         },
         },
     },
+    {
+        displayName: 'Country',
+        name: 'country',
+        type: 'string',
+        default: '',
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ['checkouts'],
+            operation: ['getPaymentMethods'],
+          },
+        },
+        description: 'Country code (e.g., GB)',
+      },
+      {
+        displayName: 'Currency',
+        name: 'currency',
+        type: 'string',
+        default: '',
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ['checkouts'],
+            operation: ['getPaymentMethods'],
+          },
+        },
+        description: 'Currency code (e.g., GBP)',
+      },
+      {
+        displayName: 'Basket ID',
+        name: 'basketId',
+        type: 'string',
+        default: '',
+        required: true,
+        displayOptions: {
+          show: {
+            resource: ['checkouts'],
+            operation: ['getPaymentMethods'],
+          },
+        },
+        description: 'Basket ID (GUID)',
+      },
 ];

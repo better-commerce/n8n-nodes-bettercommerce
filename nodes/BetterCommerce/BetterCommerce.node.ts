@@ -51,23 +51,20 @@ export class BetterCommerce implements INodeType {
     // This method must use IExecuteFunctions to access data from the workflow
     async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
         const credentials = await this.getCredentials('betterCommerce');
-        //console.log('Cred :', JSON.stringify(credentials, null, 2))
-
-  
         const token = await getAccessToken(this);
 
-        //const token = await this.getAccessToken();
         const returnData: INodeExecutionData[] = [];
         // Extract parameters
         const resource = this.getNodeParameter('resource', 0) as string;
         const operation = this.getNodeParameter('operation', 0) as string;
-
 
         const configKey = `${resource}.${operation}`;
         const config = endpointConfigs[configKey];
         
 
         // Build request
+        
+
         let endpoint = config.endpoint;
         let method = config.method;
         let body;
@@ -83,33 +80,31 @@ export class BetterCommerce implements INodeType {
                 endpoint = endpoint.replace(`{${param}}`, value);
             });
         }
-          
-        // Handle body parameters
-        // if (config.bodyParam) {
-        //     body = {
-        //         [config.bodyParam]: this.getNodeParameter(config.bodyParam, 0)
-        //     };
-        // }
-        if (config.bodyParam) {
-            let bodyTemp: Record<string, any> = {};
-         // Check if bodyParam is a string (single parameter) or an array (multiple parameters)
-            //console.log(config.bodyParam);
-            if (Array.isArray(config.bodyParam)) {
-                // Iterate over bodyParam array and construct the body
-                config.bodyParam.forEach((param: string) => {
-                    //console.log(param)
+        if(method=='convertToOrder'){
+                // fetch the basket from the api 
+                // prepare the convert to order  object from the basket response
+                // just modify the payemnt method 
 
-                    const value = this.getNodeParameter(param, 0) as string;
-                    //console.log(value)
-                    bodyTemp[param] = value;
-                });
+        }else{  
+            // Handle body parameters
+            if (config.bodyParam) {
+                let bodyTemp: Record<string, any> = {};
+            // Check if bodyParam is a string (single parameter) or an array (multiple parameters)
+                //console.log(config.bodyParam);
+                if (Array.isArray(config.bodyParam)) {
+                    // Iterate over bodyParam array and construct the body
+                    config.bodyParam.forEach((param: string) => {
+                        const value = this.getNodeParameter(param, 0) as string;
+                        bodyTemp[param] = value;
+                    });
 
-            } else {
-                // If bodyParam is a string, just add the single parameter to the body
-                const value = this.getNodeParameter(config.bodyParam, 0) as string;
-                bodyTemp[config.bodyParam] = value;
+                } else {
+                    // If bodyParam is a string, just add the single parameter to the body
+                    const value = this.getNodeParameter(config.bodyParam, 0) as string;
+                    bodyTemp[config.bodyParam] = value;
+                }
+                body=bodyTemp
             }
-            body=bodyTemp
         }
         // Example of query parameters handling
         let queryParams = '';
@@ -132,7 +127,6 @@ export class BetterCommerce implements INodeType {
                 'Content-Type': 'application/json',
             },
             body: body??{}, // Use 'data' instead of 'body' for axios POST/PUT requests
-            //data:body??{}
         };
 
         try {
@@ -141,7 +135,6 @@ export class BetterCommerce implements INodeType {
             returnData.push({ json: response });
             return [returnData];
         } catch (error) {
-            //console.log(token)
             console.log(options)
 
             throw new NodeOperationError(this.getNode(), 'API request failed: ' + error.message);
@@ -171,7 +164,7 @@ async function getAccessToken(that: IExecuteFunctions): Promise<string> {
 			'Content-Type': 'application/x-www-form-urlencoded',
 		},
 	});
-    //console.log(response.data)
+    console.log(response.data)
 
 	return response.data.access_token;
 }

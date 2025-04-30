@@ -43,7 +43,7 @@ export const endpointConfigs:EndpointConfigs  = {
 	'customers.create': {
         endpoint: '/api/v2/commerce/customer/create',
         method: 'POST',
-        bodyParam: ['email','firstname','lastname','phone'],
+        bodyParam: ['email','firstName','lastName','telephone'],
     },
 
 	'baskets.addItem': {
@@ -65,30 +65,45 @@ export const endpointConfigs:EndpointConfigs  = {
 		queryParams: ['userId']
 	
 	},
-  'baskets.updateShippingAddress': {
-    endpoint: '/api/v2/commerce/checkout/{id}/addresss',
+  'checkouts.updateShippingAddress': {
+    endpoint: '/api/v2/commerce/checkout/{id}/address-shipping',
     method: 'PUT',
     pathParams: ['id'],
-    bodyParam: ['addressLine1', 'addressLine2', 'city', 'postcode', 'country'],
+    bodyParam: ['title','firstName','lastName','companyName', 'address1', 'address2', 'city','state', 'postcode', 'countryCode','phoneNo']
   },
-  'baskets.getShippingMethods': {
+  'checkouts.updateBillingAddress': {
+    endpoint: '/api/v2/commerce/checkout/{id}/address-billing',
+    method: 'PUT',
+    pathParams: ['id'],
+    queryParams: ['sameAsShipping'],
+    bodyParam: ['title','firstName','lastName','companyName', 'address1', 'address2', 'city','state', 'postcode', 'countryCode','phoneNo'], 
+  },
+  'checkouts.getShippingMethods': {
     endpoint: '/api/v2/commerce/checkout/{id}/shipping-methods',
     method: 'GET',
     pathParams: ['id'],
-	queryParams: ['countryCode','postCode'],
+	queryParams: ['countryCode','postcode'],
   },
-  'baskets.updateShippingMethod': {
+  'checkouts.updateShippingMethod': {
     endpoint: '/api/v2/commerce/checkout/{id}/shipping-method',
     method: 'PUT',
     pathParams: ['id'],
     queryParams: ['shippingMethodId','countryCode'],
   },
-  'baskets.getPaymentMethods': {
-    endpoint: '/api/v2/commerce/checkout/paymentmethods/{id}',
+  'checkouts.getPaymentMethods': {
+    endpoint: '/api/v2/commerce/checkout/payment-methods',
     method: 'GET',
-    pathParams: ['id'],
+    queryParams: ['country', 'currency', 'basketId'],
   },
-
-
-
+  'checkouts.convertToOrder': {
+    endpoint: '/api/v2/commerce/checkout',
+    method: 'POST',
+    pathParams: ['id'],
+    bodyParam: ['placeOrderPayload'], // name of the single top-level object field
+  },
+  'b2b.createQuote': {
+    endpoint: '/api/v2/commerce/checkout',
+    method: 'POST',
+    bodyParam: ['placeOrderPayload'], // name of the single top-level object field
+  },
 };
