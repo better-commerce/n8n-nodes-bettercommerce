@@ -1,5 +1,6 @@
 import { INodeProperties } from 'n8n-workflow';
-
+import { quoteProperties } from './quoteProperties.ts';
+import { companyProperties } from './companyProperties.js';
 export const betterCommerceProperties: INodeProperties[] = [
     {
         displayName: 'Resource',
@@ -11,14 +12,44 @@ export const betterCommerceProperties: INodeProperties[] = [
             { name: 'Baskets', value: 'baskets' },
             { name: 'Checkout', value: 'checkouts' },
           //{ name: 'Orders', value: 'orders' },
-            //{ name: 'Companies', value: 'companies' },
+            { name: 'Companies', value: 'companies' },
             { name: 'Quotes', value: 'quotes' },
             //{ name: 'RFQs', value: 'rfqs' },
-            //{ name: 'Users', value: 'users' },
         ],
         default: 'products',
         description: 'The resource you want to interact with.',
     },
+    {
+        displayName: 'Action',
+        name: 'operation',
+        type: 'options',
+        default: 'submitRfq',
+        options: [
+          { name: 'Submit RFQ', value: 'submitRfq' },
+          // other operations...
+        ],
+        displayOptions: {
+          show: {
+            resource: ['quotes'],
+          },
+        },
+      },
+      {
+        displayName: 'Action',
+        name: 'operation',
+        type: 'options',
+        default: 'create',
+        options: [
+          { name: 'Create', value: 'create' },
+          { name: 'Get All', value: 'getAll' },
+
+        ],
+        displayOptions: {
+          show: {
+            resource: ['companies'],
+          },
+        },
+      },
     {
         displayName: 'Action',
         name: 'operation',
@@ -60,11 +91,7 @@ export const betterCommerceProperties: INodeProperties[] = [
             { name: 'Get By Id', value: 'getById' },
             { name: 'Add Item', value: 'addItem' },
             { name: 'Update User', value: 'updateUser' },
-            // { name: 'Update Shipping Address', value: 'updateShippingAddress' },
-            // { name: 'Update Billing Address', value: 'updateBillingAddress' },
-            // { name: 'Get Shipping Methods', value: 'getShippingMethods' },
-            // { name: 'Update Shipping Method', value: 'updateShippingMethod' },
-            // { name: 'Get Payment Methods', value: 'getPaymentMethods' },
+            { name: 'Save As Quote', value: 'saveQuote' },
         ],
         displayOptions:{
             show:{ resource: ['baskets']}
@@ -92,6 +119,9 @@ export const betterCommerceProperties: INodeProperties[] = [
         default: 'addItems',
         description: 'The operation to perform.',
     },
+    // fields defination 
+
+
     {
         displayName: 'Free text',
         name: 'freeText',
@@ -134,20 +164,6 @@ export const betterCommerceProperties: INodeProperties[] = [
         },
         description: 'stockCode to fetch',
     },
-    // {
-    //     displayName: 'User Name',
-    //     name: 'userName',
-    //     type: 'string',
-    //     default: '',
-    //     required: true,
-    //     description: 'The username of the customer',
-    //     displayOptions: {
-    //         show: {
-    //             resource: ['customers'],
-    //             operation: ['create'],
-    //         },
-    //     },
-    // },
     {
         displayName: 'Email',
         name: 'email',
@@ -591,4 +607,6 @@ export const betterCommerceProperties: INodeProperties[] = [
             },
         },
     },
+    ...quoteProperties,
+    ...companyProperties,
 ];

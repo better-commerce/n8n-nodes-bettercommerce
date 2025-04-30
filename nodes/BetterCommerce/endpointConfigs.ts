@@ -101,9 +101,36 @@ export const endpointConfigs:EndpointConfigs  = {
     pathParams: ['id'],
     bodyParam: ['placeOrderPayload'], // name of the single top-level object field
   },
-  'b2b.createQuote': {
-    endpoint: '/api/v2/commerce/checkout',
-    method: 'POST',
-    bodyParam: ['placeOrderPayload'], // name of the single top-level object field
+'quotes.submitRfq': {
+  endpoint: '/api/v2/commerce/b2b/rfq',
+  method: 'POST',
+  bodyParam: [
+    'basketId', 'firstName', 'lastName', 'companyId', 'companyName',
+    'poNumber', 'shippingMethodCode', 'shippingMethodName', 
+    'comment',  'lines', 'currencyCode',
+    'currencySymbol', 'deliveryInstruction'
+  ],
   },
+  'baskets.saveQuote': {
+  endpoint: '/api/v2/commerce/b2b/quote/save',
+  method: 'POST',
+  bodyParam: [
+    'id', 'purchaseOrderNo', 'quoteName', 'email'
+  ],
+  },
+  'companies.create': {
+  endpoint: '/api/v2/commerce/b2b/create',
+  method: 'POST',
+  bodyParam: [
+    'businessType','registeredNumber', 
+    'address','parentCompanyCode','firstName', 'lastName',
+    'email',    'title',    'telephone',    'mobile',    'postCode',    'companyName',
+    'companyCode', 'companyUserRole'
+    ],
+  },
+  'companies.getAll': {
+    endpoint: '/api/v2/commerce/b2b/companies',
+    method: 'GET',
+  }
+
 };
