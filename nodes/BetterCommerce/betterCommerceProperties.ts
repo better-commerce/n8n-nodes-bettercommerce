@@ -538,4 +538,57 @@ export const betterCommerceProperties: INodeProperties[] = [
         },
         description: 'Basket ID (GUID)',
       },
+
+    {
+        displayName: 'Input Mode',
+        name: 'inputMode',
+        type: 'options',
+        default: 'quick',
+        options: [
+            { name: 'Quick (Form Fields)', value: 'quick' },
+            { name: 'Advanced (Raw JSON)', value: 'advanced' },
+        ],
+        displayOptions: {
+            show: {
+                resource: ['checkouts'],
+                operation: ['convertToOrder'],
+            },
+        },
+        description: 'Choose how to send the convert-to-order request.',
+    },
+    {
+        displayName: 'Payload (Advanced)',
+        name: 'rawBody',
+        type: 'json',
+        default: '',
+        required: true,
+        typeOptions: {
+            alwaysOpenEditWindow: true,
+        },
+        displayOptions: {
+            show: {
+                resource: ['checkout'],
+                operation: ['convertToOrder'],
+                inputMode: ['advanced'],
+            },
+        },
+        description: 'Full request payload to convert the basket into an order.',
+    },
+    {
+        displayName: 'Selected Payment',
+        name: 'selectedPayment',
+        type: 'json',
+        default: '',
+        required: true,
+        typeOptions: {
+            alwaysOpenEditWindow: true,
+        },
+        displayOptions: {
+            show: {
+                resource: ['checkout'],
+                operation: ['convertToOrder'],
+                inputMode: ['quick'],
+            },
+        },
+    },
 ];

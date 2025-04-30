@@ -84,6 +84,33 @@ export class BetterCommerce implements INodeType {
                 // fetch the basket from the api 
                 // prepare the convert to order  object from the basket response
                 // just modify the payemnt method 
+                // set the body variable 
+                const inputMode = this.getNodeParameter('inputMode', 0) as string;
+
+                if (inputMode === 'advanced') {
+                    // Raw JSON provided
+                    body = this.getNodeParameter('rawBody', 0) as object;
+                } else {
+                    // QUICK mode
+                    const basketId = this.getNodeParameter('basketId', 0) as string;
+            
+                    const basketResponse = await this.helpers.httpRequest({
+                        url: `${credentials.baseApiUrl}/api/v2/commerce/basket/${basketId}`,
+                        method: 'GET',
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: 'application/json',
+                        },
+                    });
+           
+                    const convertBody = { ...basketResponse };
+            
+                    // Replace only the payment method
+                    const selectedPayment = this.getNodeParameter('selectedPayment', 0) as object;
+                    convertBody.selectedPayment = selectedPayment;
+            
+                    body = convertBody;
+                }
 
         }else{  
             // Handle body parameters
