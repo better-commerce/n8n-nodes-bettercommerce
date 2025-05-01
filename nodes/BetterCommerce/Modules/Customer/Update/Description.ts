@@ -1,16 +1,17 @@
 import { INodeProperties } from 'n8n-workflow';
 
 export const Description: INodeProperties[] = [
+   
     {
-        displayName: 'Email',
-        name: 'email',
+        displayName: 'Customer Id',
+        name: 'customerId',
         type: 'string',
         required: true,
         default: '',
         displayOptions: {
             show: {
                 resource: ['customer'],
-                operation: ['create'],
+                operation: ['get'],
             },
         },
     },
@@ -23,7 +24,7 @@ export const Description: INodeProperties[] = [
         displayOptions: {
             show: {
                 resource: ['customer'],
-                operation: ['create'],
+                operation: ['update'],
             },
         },
     },
@@ -36,7 +37,7 @@ export const Description: INodeProperties[] = [
         displayOptions: {
             show: {
                 resource: ['customer'],
-                operation: ['create'],
+                operation: ['update'],
             },
         },
     },
@@ -48,7 +49,7 @@ export const Description: INodeProperties[] = [
         displayOptions: {
             show: {
                 resource: ['customer'],
-                operation: ['create'],
+                operation: ['update'],
             },
         },
     },
@@ -60,7 +61,7 @@ export const Description: INodeProperties[] = [
         displayOptions: {
             show: {
                 resource: ['customer'],
-                operation: ['create'],
+                operation: ['update'],
             },
         },
     },
@@ -72,7 +73,7 @@ export const Description: INodeProperties[] = [
         displayOptions: {
             show: {
                 resource: ['customer'],
-                operation: ['create'],
+                operation: ['update'],
             },
         },
     },
@@ -90,7 +91,7 @@ export const Description: INodeProperties[] = [
         displayOptions: {
             show: {
                 resource: ['customer'],
-                operation: ['create'],
+                operation: ['update'],
             },
         },
     },
@@ -102,7 +103,7 @@ export const Description: INodeProperties[] = [
         displayOptions: {
             show: {
                 resource: ['customer'],
-                operation: ['create'],
+                operation: ['update'],
             },
         },
     },
@@ -114,7 +115,7 @@ export const Description: INodeProperties[] = [
         displayOptions: {
             show: {
                 resource: ['customer'],
-                operation: ['create'],
+                operation: ['update'],
             },
         },
     },
@@ -126,7 +127,7 @@ export const Description: INodeProperties[] = [
         displayOptions: {
             show: {
                 resource: ['customer'],
-                operation: ['create'],
+                operation: ['update'],
             },
         },
     },
@@ -138,7 +139,7 @@ export const Description: INodeProperties[] = [
         displayOptions: {
             show: {
                 resource: ['customer'],
-                operation: ['create'],
+                operation: ['update'],
             },
         },
     },
@@ -150,7 +151,7 @@ export const Description: INodeProperties[] = [
         displayOptions: {
             show: {
                 resource: ['customer'],
-                operation: ['create'],
+                operation: ['update'],
             },
         },
     },

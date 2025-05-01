@@ -1,0 +1,25 @@
+import {
+    IExecuteFunctions,
+    INodeExecutionData,
+    IDataObject,
+  } from 'n8n-workflow';
+  import { BetterCommerceClient} from '../../../Utils/Client';
+;
+  export async function execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+    const credentials = await this.getCredentials('betterCommerceApi');
+    const client = new BetterCommerceClient(credentials, this,'customer');
+    const email = this.getNodeParameter('email', 0) as string;
+    console.log(`in action execute ${email}`)
+    
+    const returnData: INodeExecutionData[] = [];
+    try {
+        const exists = await client.post<IDataObject>(`/${email}/exists`,{});
+        returnData.push({ json: exists });
+    } catch (error) {
+        if (this.continueOnFail()) {
+            return [[{ json: { error: error.message } }]];
+        }
+        throw error;
+    }
+    return [returnData];
+}

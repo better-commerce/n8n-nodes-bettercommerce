@@ -24,7 +24,7 @@ export async function handleCustomerOperations(
                     lastName: this.getNodeParameter('lastName', index, '') as string,
                 };
                 return [{
-                    json: await client.create<IDataObject>('/customer', createParams)
+                    json: await client.create<IDataObject>('/create', createParams)
                 }];
 
             case 'getById':
@@ -33,7 +33,6 @@ export async function handleCustomerOperations(
                     json: await client.get<IDataObject>(`/customer/${customerId}`)
                 }];
             case 'getByEmail':
-                console.log('in getByEmail')
                 const email = this.getNodeParameter('email', index) as string;
                 return [{
                     json: await client.post<IDataObject>(`/customer/${email}/exists`,{})
@@ -57,12 +56,12 @@ export async function handleCustomerOperations(
                     lastName: this.getNodeParameter('lastName', index, '') as string,
                 };
                 return [{
-                    json: await client.update<IDataObject>(`/customer/${updateId}`, updateParams)
+                    json: await client.update<IDataObject>(`/${updateId}/update`, updateParams)
                 }];
 
             case 'delete':
                 const deleteId = this.getNodeParameter('customerId', index) as string;
-                await client.delete(`/customer/${deleteId}`);
+                await client.delete(`/${deleteId}/delete`);
                 return [{
                     json: { success: true }
                 }];
