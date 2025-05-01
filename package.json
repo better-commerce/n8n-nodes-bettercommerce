@@ -34,6 +34,7 @@
     "dist"
   ],
 "n8n": {
+  "name": "n8n-nodes-bettercommerce",
   "n8nNodesApiVersion": 1,
   "credentials": [
     "dist/credentials/BetterCommerce.credentials.js"
