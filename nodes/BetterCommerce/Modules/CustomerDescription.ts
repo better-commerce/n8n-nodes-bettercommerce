@@ -10,8 +10,9 @@ export async function handleCustomerOperations(
     this: IExecuteFunctions, 
     index: number
 ): Promise<INodeExecutionData[]> {
+    const moduceCode ='customer';
     const credentials = await this.getCredentials('betterCommerceApi');
-    const client = new BetterCommerceClient(credentials, this);
+    const client = new BetterCommerceClient(credentials, this,moduceCode);
     const operation = this.getNodeParameter('operation', index) as string;
 
     try {
@@ -23,15 +24,20 @@ export async function handleCustomerOperations(
                     lastName: this.getNodeParameter('lastName', index, '') as string,
                 };
                 return [{
-                    json: await client.create<IDataObject>('/customers', createParams)
+                    json: await client.create<IDataObject>('/customer', createParams)
                 }];
 
-            case 'get':
+            case 'getById':
                 const customerId = this.getNodeParameter('customerId', index) as string;
                 return [{
-                    json: await client.get<IDataObject>(`/customers/${customerId}`)
+                    json: await client.get<IDataObject>(`/customer/${customerId}`)
                 }];
-
+            case 'getByEmail':
+                console.log('in getByEmail')
+                const email = this.getNodeParameter('email', index) as string;
+                return [{
+                    json: await client.post<IDataObject>(`/customer/${email}/exists`,{})
+                }];
             case 'getAll':
                 const returnAll = this.getNodeParameter('returnAll', index, false) as boolean;
                 const qs: IDataObject = {};
@@ -41,7 +47,7 @@ export async function handleCustomerOperations(
                 }
                 
                 return [{
-                    json: await client.get<IDataObject>('/customers', qs)
+                    json: await client.get<IDataObject>('/customer', qs)
                 }];
 
             case 'update':
@@ -51,12 +57,12 @@ export async function handleCustomerOperations(
                     lastName: this.getNodeParameter('lastName', index, '') as string,
                 };
                 return [{
-                    json: await client.update<IDataObject>(`/customers/${updateId}`, updateParams)
+                    json: await client.update<IDataObject>(`/customer/${updateId}`, updateParams)
                 }];
 
             case 'delete':
                 const deleteId = this.getNodeParameter('customerId', index) as string;
-                await client.delete(`/customers/${deleteId}`);
+                await client.delete(`/customer/${deleteId}`);
                 return [{
                     json: { success: true }
                 }];

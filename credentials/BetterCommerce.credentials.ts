@@ -27,30 +27,26 @@ export class BetterCommerce implements ICredentialType {
             default: '',
         },
         {
-            displayName: 'Auth URL',
-            name: 'authUrl',
-            type: 'string',
-            default: 'https://auth.dev-omnicx.com/oauth/token',
-            placeholder: 'https://your-domain/connect/token',
-        },
-        {
-            displayName: 'API URL',
-            name: 'apiUrl',
-            type: 'string',
-            default: 'https://api20.dev-omnicx.com',
-            placeholder: 'https://api20.dev-omnicx.com',
-        },
+            displayName: 'Environment',
+            name: 'environment',
+            type: 'options',
+            options: [
+                { name: 'Production', value: 'prod' },
+                { name: 'Development', value: 'dev' }
+            ],
+            default: 'prod'
+        }
     ];
 
     test: ICredentialTestRequest = {
         request: {
             method: 'POST',
-            url: '={{$credentials.authUrl}}',
+            url: '={{ $credentials.environment === "dev" ? "https://auth.dev-omnicx.com/oauth/token" : "https://auth.bettercommerce.io/oauth/token" }}',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: 'grant_type=client_credentials&client_id={{$credentials.clientId}}&client_secret={{$credentials.clientSecret}}',
-        }
+        },
     };
 
     async authenticate(

@@ -59,7 +59,6 @@ export class BetterCommerce implements INodeType {
     async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
         const resource = this.getNodeParameter('resource', 0) as string;
         const operation = this.getNodeParameter('operation', 0) as string;
-        
         const module = MODULES[resource as keyof typeof MODULES];
         if (!module) {
             throw new NodeOperationError(this.getNode(), `Unsupported resource: ${resource}`);
