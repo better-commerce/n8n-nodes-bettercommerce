@@ -9,7 +9,7 @@ export { Description } from './Description';
 
 export async function execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const credentials = await this.getCredentials('betterCommerceApi');
-    const client = new BetterCommerceClient(credentials, this, 'b2b');
+    const client = new BetterCommerceClient(credentials, this, 'quote');
     const customerClient = new BetterCommerceClient(credentials, this, 'customer');
     const items = this.getInputData();
     const returnData: INodeExecutionData[] = [];
@@ -184,7 +184,7 @@ export async function execute(this: IExecuteFunctions): Promise<INodeExecutionDa
             };
             
             const quoteResponse = await client.create<IDataObject>(
-                '/quote/save',
+                '/b2b/quote/save',
                 quotePayload
             );
             
