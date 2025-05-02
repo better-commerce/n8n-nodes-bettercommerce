@@ -7,16 +7,16 @@ import {
 } from 'n8n-workflow';
 
 import * as Customer from './Modules/Customer/Index';
-// import * as Order from './Modules/Order';
-// import * as Product from './Modules/Product';
-// import * as Quote from './Modules/Quote';
+import * as Order from './Modules/Order/Index';
+import * as Product from './Modules/Product/Index';
+import * as Quote from './Modules/Quote/Index';
 // import * as Trigger from './Modules/Trigger';
 
 const MODULES = {
     customer: Customer,
-    // order: Order,
-    // product: Product,
-    // quote: Quote,
+    order: Order,
+    product: Product,
+    quote: Quote,
     // trigger: Trigger,
 };
 
@@ -46,15 +46,33 @@ export class BetterCommerce implements INodeType {
                 name: 'resource',
                 type: 'options',
                 noDataExpression: true,
-                options: Object.keys(MODULES).map(moduleName => ({
-                    name: moduleName.charAt(0).toUpperCase() + moduleName.slice(1),
-                    value: moduleName,
-                })),
+                options: [
+                    {
+                        name: 'Customer',
+                        value: 'customer',
+                    },
+                    {
+                        name: 'Order',
+                        value: 'order',
+                    },
+                    {
+                        name: 'Product',
+                        value: 'product',
+                    },
+                    {
+                        name: 'Quote',
+                        value: 'quote',
+                    },
+                    // Add other resources as they are developed
+                ],
                 default: 'customer',
             },
-            ...Object.values(MODULES).flatMap(module => module.description),
+            ...Customer.description,
+            ...Order.description,
+            ...Product.description,
+            ...Quote.description,
+            // ...Trigger.description,
         ],
-       
     };
 
     async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -77,3 +95,5 @@ export class BetterCommerce implements INodeType {
         return module.execute.call(this, operation);
     }
 }
+
+

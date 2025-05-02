@@ -13,16 +13,16 @@ export class UrlManager {
 		const defaults: Record<'prod' | 'dev', Record<string, string>> = {
 			prod: {
 				product: 'https://pimapi.bettercommerce.io/',
-				order: 'https://api20.bettercommerce.io/',
+				order: 'https://api20.bettercommerce.io/api/v2/commerce/',
 				customer: 'https://api20.bettercommerce.io/',
-				quote: 'https://api20.bettercommerce.io/',
+				quote: 'https://api20.bettercommerce.io/api/v2/commerce/',
 				auth: 'https://auth.bettercommerce.io/',
 			},
 			dev: {
 				product: 'https://pimapi.dev-omnicx.com/',
-				order: 'https://api20.dev-omnicx.com/',
+				order: 'https://api20.dev-omnicx.com/api/v2/commerce/',
 				customer: 'https://api20.dev-omnicx.com/api/v2/commerce/customer',
-				quote: 'https://api20.dev-omnicx.com/',
+				quote: 'https://api20.dev-omnicx.com/api/v2/commerce/',
 				auth: 'https://auth.dev-omnicx.com/',
 			},
 		};
@@ -34,7 +34,7 @@ export class UrlManager {
 		if (!resolved) {
 			throw new Error(`No URL configured for module: ${module}`);
 		}
-
+		console.log(`env : ${env}, resolved url ${resolved}, module ${module}`);	
 		return UrlManager.validateUrl(resolved);
 	}
 

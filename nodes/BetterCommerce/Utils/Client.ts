@@ -49,8 +49,8 @@ export class BetterCommerceClient {
         return this.request<T>('GET', endpoint, undefined, params);
     }
 
-    public async update<T>(endpoint: string, data: IDataObject): Promise<T> {
-        return this.request<T>('PUT', endpoint, data);
+    public async update<T>(endpoint: string, data: IDataObject, qs?: IDataObject): Promise<T> {
+        return this.request<T>('PUT', endpoint, data, qs);
     }
 
     public async delete<T>(endpoint: string): Promise<T> {
