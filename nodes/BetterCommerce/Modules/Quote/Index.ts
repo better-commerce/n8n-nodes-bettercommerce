@@ -1,11 +1,13 @@
 import { INodeProperties, IExecuteFunctions } from 'n8n-workflow';
 
 import * as Create from './Create/Action';
+import * as GetByEmail from './GetByEmail/Action';
 // Import other operations as they are developed
 
 export async function execute(this: IExecuteFunctions, operation: string) {
     const actions = {
         create: Create.execute,
+        getByEmail: GetByEmail.execute,
         // Add other operations as they are developed
     };
 
@@ -34,9 +36,18 @@ export const description: INodeProperties[] = [
                 description: 'Create a new quote',
                 action: 'Create a quote',
             },
+            {
+                name: 'Get By Email',
+                value: 'getByEmail',
+                description: 'Get quotes by customer email',
+                action: 'Get quotes by email',
+            },
             // Add other operations as they are developed
         ],
         default: 'create',
     },
     ...Create.Description,
+    ...GetByEmail.Description,
 ];
+
+

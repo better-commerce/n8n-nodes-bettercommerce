@@ -1,67 +1,63 @@
-import { 
-    ITriggerFunctions,
-    ITriggerResponse,
+import {
+    IExecuteFunctions,
+    INodeExecutionData,
     IDataObject,
-    IExecuteFunctions
+    NodeApiError,
 } from 'n8n-workflow';
 import { BetterCommerceClient } from '../../../Utils/Client';
+import { IWebhookConfig } from '../../../Utils/Interfaces';
+export { Description } from './Description';
 
-interface ITriggerContext extends ITriggerFunctions {
-    getNodeWebhookUrl(name: string): string;
-    getWorkflowStaticData(type: string): IDataObject;
-}
-export interface IWebhookConfig {
-    event: string;
-    url: string;
-    includeMetadata?: boolean;
-}
-
-export interface IWebhookResponse {
-    id: string;
-    event: string;
-    url: string;
-    createdAt: string;
-}
-
-declare module 'n8n-workflow' {
-    interface ITriggerResponse {
-        webhookId?: string;
-        webhookUrl?: string;
-    }
-}
-
-export async function execute(this: ITriggerContext): Promise<ITriggerResponse> {
+export async function execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const credentials = await this.getCredentials('betterCommerceApi');
-    const event = this.getNodeParameter('event', 0) as string;
-    const includeMetadata = this.getNodeParameter('includeMetadata', 0, {}) as boolean;
-    
-    const client = new BetterCommerceClient(
-        credentials, 
-        this as unknown as IExecuteFunctions,
-        'trigger'
-    );
+    const client = new BetterCommerceClient(credentials, this, 'webhook');
+    const items = this.getInputData();
+    const returnData: INodeExecutionData[] = [];
 
-    const webhookData = this.getWorkflowStaticData('node');
-    const webhookUrl = this.getNodeWebhookUrl('default');
-
-    // Clean up previous webhook if exists
-    if (webhookData.webhookId) {
-        await client.deleteWebhook(webhookData.webhookId as string);
+    for (let i = 0; i < items.length; i++) {
+        try {
+            const event = this.getNodeParameter('event', i) as string;
+            const additionalFields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
+            
+            // For regular nodes, we need to get the webhook URL from parameters
+            // This is different from trigger nodes which can use getNodeWebhookUrl
+            const webhookUrl = this.getNodeParameter('webhookUrl', i, '') as string;
+            
+            if (!webhookUrl) {
+                throw new Error('No webhook URL provided. Please enter a valid webhook URL.');
+            }
+            
+            // Create webhook configuration
+            const webhookConfig: IWebhookConfig = {
+                event,
+                url: webhookUrl,
+                includeMetadata: additionalFields.includeMetadata as boolean,
+            };
+            
+            // Register the webhook with BetterCommerce
+            const response = await client.createWebhook(webhookConfig);
+            
+            // Store the webhook ID for later deletion
+            const webhookData = this.getWorkflowStaticData('node');
+            webhookData.webhookId = response.id;
+            
+            returnData.push({
+                json: {
+                    success: true,
+                    webhookId: response.id,
+                    event: response.event,
+                    url: response.url,
+                    createdAt: response.createdAt,
+                }
+            });
+        } catch (error) {
+            if (this.continueOnFail()) {
+                returnData.push({ json: { success: false, error: error.message } });
+                continue;
+            }
+            throw new NodeApiError(this.getNode(), error);
+        }
     }
 
-    // Register new webhook
-    const response = await client.createWebhook({
-        event,
-        url: webhookUrl,
-        includeMetadata,
-    });
-
-    // Store webhook ID for cleanup
-    webhookData.webhookId = response.id;
-
-    // Proper ITriggerResponse structure
-    return {
-        webhookId: response.id,
-        webhookUrl,
-    };
+    return [returnData];
 }

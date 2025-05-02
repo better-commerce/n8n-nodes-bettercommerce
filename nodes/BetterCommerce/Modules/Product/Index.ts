@@ -1,9 +1,9 @@
-import { INodeProperties,IExecuteFunctions, jsonStringify } from 'n8n-workflow';
+import { INodeProperties, IExecuteFunctions, jsonStringify } from 'n8n-workflow';
 
 import * as Create from './Create/Action';
+import * as Get from './Get/Action';
+import * as GetAll from './GetAll/Action';
 // import * as GetByEmail from './GetByEmail/Action';
-// import * as Get from './Get/Action';
-// // import * as GetAll from './GetAll';
 // import * as Update from './Update/Action';
 // import * as Delete from './Delete/Action';
 
@@ -29,9 +29,9 @@ export const description: INodeProperties[] = [
         default: 'get',
     },
     ...Create.Description,
+    ...Get.Description,
+    ...GetAll.Description,
     //...GetByEmail.Description,
-    //...Get.Description,
-    // ...GetAll.Description,
     //...Update.Description,
     //...Delete.Description,
 ];
@@ -39,9 +39,9 @@ export const description: INodeProperties[] = [
 export async function execute(this: IExecuteFunctions, operation: string) {
     const actions = {
         create: Create.execute,
+        get: Get.execute,
+        getAll: GetAll.execute,
         //getByEmail: GetByEmail.execute,
-        //get: Get.execute,
-        //getAll: GetAll.execute,
         //update: Update.execute,
         //delete: Delete.execute,
     };

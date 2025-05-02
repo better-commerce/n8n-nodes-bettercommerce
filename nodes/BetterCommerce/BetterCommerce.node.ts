@@ -10,25 +10,25 @@ import * as Customer from './Modules/Customer/Index';
 import * as Order from './Modules/Order/Index';
 import * as Product from './Modules/Product/Index';
 import * as Quote from './Modules/Quote/Index';
-// import * as Trigger from './Modules/Trigger';
+import * as Trigger from './Modules/Trigger/Index';
 
 const MODULES = {
     customer: Customer,
     order: Order,
     product: Product,
     quote: Quote,
-    // trigger: Trigger,
+    trigger: Trigger,
 };
 
 export class BetterCommerce implements INodeType {
     description: INodeTypeDescription = {
         displayName: 'BetterCommerce',
         name: 'betterCommerce',
-        icon: 'file:logo.svg',
+        icon: 'file:betterCommerce.svg',
         group: ['transform'],
         version: 1,
         subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-        description: 'Interact with BetterCommerce API',
+        description: 'Consume BetterCommerce API',
         defaults: {
             name: 'BetterCommerce',
         },
@@ -63,7 +63,10 @@ export class BetterCommerce implements INodeType {
                         name: 'Quote',
                         value: 'quote',
                     },
-                    // Add other resources as they are developed
+                    {
+                        name: 'Trigger',
+                        value: 'trigger',
+                    },
                 ],
                 default: 'customer',
             },
@@ -71,7 +74,7 @@ export class BetterCommerce implements INodeType {
             ...Order.description,
             ...Product.description,
             ...Quote.description,
-            // ...Trigger.description,
+            ...Trigger.description,
         ],
     };
 
@@ -82,18 +85,9 @@ export class BetterCommerce implements INodeType {
         if (!module) {
             throw new NodeOperationError(this.getNode(), `Unsupported resource: ${resource}`);
         }
-        if (operation === 'registerWebhook') {
-            // const event = this.getNodeParameter('event', 0) as string;
-            // const webhookUrl = this.getNodeParameter('webhookUrl', 0) as string;
-            
-            // Your webhook registration logic here
-            //const response = await registerWebhook(event, webhookUrl);
-            
-            //return [[{ json: response }]];
-            return [[{ json: {} }]]
-        }
         return module.execute.call(this, operation);
     }
 }
+
 
 

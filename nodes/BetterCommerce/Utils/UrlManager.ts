@@ -17,6 +17,9 @@ export class UrlManager {
 				customer: 'https://api20.bettercommerce.io/',
 				quote: 'https://api20.bettercommerce.io/api/v2/commerce/',
 				auth: 'https://auth.bettercommerce.io/',
+				catalog: 'https://api20.bettercommerce.io/api/v2/catalog/',
+				//b2b: 'https://api20.bettercommerce.io/api/v2/b2b/',
+				//webhook: 'https://api20.bettercommerce.io/api/v2/webhook/',
 			},
 			dev: {
 				product: 'https://pimapi.dev-omnicx.com/',
@@ -24,6 +27,9 @@ export class UrlManager {
 				customer: 'https://api20.dev-omnicx.com/api/v2/commerce/customer',
 				quote: 'https://api20.dev-omnicx.com/api/v2/commerce/',
 				auth: 'https://auth.dev-omnicx.com/',
+				catalog: 'https://api20.dev-omnicx.com/api/v2/catalog/',
+				//b2b: 'https://api20.dev-omnicx.com/api/v2/b2b/',
+				//webhook: 'https://api20.dev-omnicx.com/api/v2/webhook/',
 			},
 		};
 

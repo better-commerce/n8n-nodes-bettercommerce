@@ -3,30 +3,20 @@ import {
     IHttpRequestMethods,
     IHttpRequestOptions,
     NodeApiError,
-    IExecuteFunctions, // Added import
+    IExecuteFunctions,
     IDataObject,
-    jsonStringify,ITriggerFunctions
+    jsonStringify,
+    ITriggerFunctions
 } from 'n8n-workflow';
 import axios from 'axios';
 import { UrlManager } from './UrlManager';
-import {IWebhookConfig,IWebhookResponse,} from '../Modules/Trigger/Webhook/Action' 
-
+import { IWebhookConfig, IWebhookResponse } from './Interfaces';
 
 export class BetterCommerceClient {
     private credentials: ICredentialDataDecryptedObject;
-    //private baseUrl: string;
     private executeFunctions: IExecuteFunctions;
-    private module : string;
-    // constructor(
-    //     credentials: ICredentialDataDecryptedObject,
-    //     executeFunctions: IExecuteFunctions, // Changed parameter type
-    //     module: string 
-    // ) {
-    //     this.credentials = credentials;
-    //     //this.baseUrl = credentials.apiUrl as string || 'https://api.bettercommerce.com';
-    //     this.executeFunctions = executeFunctions;
-    //     this.module = module;
-    // }
+    private module: string;
+
     constructor(
         credentials: ICredentialDataDecryptedObject,
         executeFunctions: IExecuteFunctions | ITriggerFunctions,
@@ -40,10 +30,12 @@ export class BetterCommerceClient {
     public async create<T>(endpoint: string, data: IDataObject): Promise<T> {
         return this.request<T>('POST', endpoint, data);
     }
+    
     // just not to confuse with create word
     public async post<T>(endpoint: string, data: IDataObject): Promise<T> {
         return this.request<T>('POST', endpoint, data);
     }
+    
     public async get<T>(endpoint: string, params?: IDataObject): Promise<T> {
         console.log(`endpoint ${endpoint}`)
         return this.request<T>('GET', endpoint, undefined, params);
@@ -57,35 +49,20 @@ export class BetterCommerceClient {
         return this.request<T>('DELETE', endpoint);
     }
 
-    // async createWebhook(config: IWebhookConfig): Promise<IWebhookResponse> {
-    //     return this.request<IWebhookResponse>('POST', '/webhooks', {
-    //         event: config.event,
-    //         url: config.url,
-    //         ...(config.includeMetadata && { includeMetadata: true })
-    //     });
-    // }
-
-    async registerWebhook(config: {
-        event: string;
-        callbackUrl: string;
-        includeMetadata?: boolean;
-    }): Promise<{ id: string; url: string }> {
-        return this.request<{ id: string; url: string }>('POST', '/webhooks', {
-            event: config.event,
-            url: config.callbackUrl,
-            includeMetadata: config.includeMetadata || false
-        });
-    }
-
-    async createWebhook(config: IWebhookConfig): Promise<IWebhookResponse> {
+    public async createWebhook(config: IWebhookConfig): Promise<IWebhookResponse> {
         return this.request<IWebhookResponse>('POST', '/webhooks', {
             event: config.event,
             url: config.url,
-            includeMetadata: config.includeMetadata || false
+            ...(config.includeMetadata && { includeMetadata: true })
         });
     }
-    async deleteWebhook(id: string): Promise<void> {
-        return this.request<void>('DELETE', `/webhooks/${id}`);
+
+    public async deleteWebhook(webhookId: string): Promise<void> {
+        return this.request<void>('DELETE', `/webhooks/${webhookId}`);
+    }
+
+    public async getWebhooks(): Promise<IWebhookResponse[]> {
+        return this.request<IWebhookResponse[]>('GET', '/webhooks');
     }
 
     private async request<T>(

@@ -8,19 +8,85 @@ export const Description: INodeProperties[] = [
         required: true,
         default: '',
         options: [
+            // Customer events
             {
                 name: 'Customer Created',
                 value: 'customer.created',
             },
             {
+                name: 'Customer Updated',
+                value: 'customer.updated',
+            },
+            {
+                name: 'Customer Deleted',
+                value: 'customer.deleted',
+            },
+            // Order events
+            {
                 name: 'Order Created',
                 value: 'order.created',
+            },
+            {
+                name: 'Order Updated',
+                value: 'order.updated',
+            },
+            {
+                name: 'Order Deleted',
+                value: 'order.deleted',
+            },
+            {
+                name: 'Order Status Changed',
+                value: 'order.status.changed',
+            },
+            // Product events
+            {
+                name: 'Product Created',
+                value: 'product.created',
             },
             {
                 name: 'Product Updated',
                 value: 'product.updated',
             },
+            {
+                name: 'Product Deleted',
+                value: 'product.deleted',
+            },
+            {
+                name: 'Product Stock Changed',
+                value: 'product.stock.changed',
+            },
+            // Quote events
+            {
+                name: 'Quote Created',
+                value: 'quote.created',
+            },
+            {
+                name: 'Quote Updated',
+                value: 'quote.updated',
+            },
+            {
+                name: 'Quote Deleted',
+                value: 'quote.deleted',
+            },
+            {
+                name: 'Quote Status Changed',
+                value: 'quote.status.changed',
+            },
         ],
+        displayOptions: {
+            show: {
+                resource: ['trigger'],
+                operation: ['webhook'],
+            },
+        },
+    },
+    {
+        displayName: 'Webhook URL',
+        name: 'webhookUrl',
+        type: 'string',
+        default: '',
+        required: true,
+        description: 'URL to receive webhook events',
         displayOptions: {
             show: {
                 resource: ['trigger'],
