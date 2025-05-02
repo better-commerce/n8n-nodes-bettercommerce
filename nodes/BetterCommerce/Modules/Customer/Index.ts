@@ -1,11 +1,11 @@
 import { INodeProperties,IExecuteFunctions, jsonStringify } from 'n8n-workflow';
 
-import * as Create from './Create/Index';
-import * as GetByEmail from './GetByEmail/Index';
-import * as Get from './Get/Index';
+import * as Create from './Create/Action';
+import * as GetByEmail from './GetByEmail/Action';
+import * as Get from './Get/Action';
 // import * as GetAll from './GetAll';
-import * as Update from './Update/Index';
-import * as Delete from './Delete/Index';
+import * as Update from './Update/Action';
+import * as Delete from './Delete/Action';
 
 export const description: INodeProperties[] = [
     {

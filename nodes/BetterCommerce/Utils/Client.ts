@@ -5,24 +5,35 @@ import {
     NodeApiError,
     IExecuteFunctions, // Added import
     IDataObject,
-    jsonStringify,
+    jsonStringify,ITriggerFunctions
 } from 'n8n-workflow';
 import axios from 'axios';
 import { UrlManager } from './UrlManager';
+import {IWebhookConfig,IWebhookResponse,} from '../Modules/Trigger/Webhook/Action' 
+
 
 export class BetterCommerceClient {
     private credentials: ICredentialDataDecryptedObject;
     //private baseUrl: string;
     private executeFunctions: IExecuteFunctions;
     private module : string;
+    // constructor(
+    //     credentials: ICredentialDataDecryptedObject,
+    //     executeFunctions: IExecuteFunctions, // Changed parameter type
+    //     module: string 
+    // ) {
+    //     this.credentials = credentials;
+    //     //this.baseUrl = credentials.apiUrl as string || 'https://api.bettercommerce.com';
+    //     this.executeFunctions = executeFunctions;
+    //     this.module = module;
+    // }
     constructor(
         credentials: ICredentialDataDecryptedObject,
-        executeFunctions: IExecuteFunctions, // Changed parameter type
-        module: string 
+        executeFunctions: IExecuteFunctions | ITriggerFunctions,
+        module: string
     ) {
         this.credentials = credentials;
-        //this.baseUrl = credentials.apiUrl as string || 'https://api.bettercommerce.com';
-        this.executeFunctions = executeFunctions;
+        this.executeFunctions = executeFunctions as IExecuteFunctions; // Type assertion
         this.module = module;
     }
 
@@ -44,6 +55,37 @@ export class BetterCommerceClient {
 
     public async delete<T>(endpoint: string): Promise<T> {
         return this.request<T>('DELETE', endpoint);
+    }
+
+    // async createWebhook(config: IWebhookConfig): Promise<IWebhookResponse> {
+    //     return this.request<IWebhookResponse>('POST', '/webhooks', {
+    //         event: config.event,
+    //         url: config.url,
+    //         ...(config.includeMetadata && { includeMetadata: true })
+    //     });
+    // }
+
+    async registerWebhook(config: {
+        event: string;
+        callbackUrl: string;
+        includeMetadata?: boolean;
+    }): Promise<{ id: string; url: string }> {
+        return this.request<{ id: string; url: string }>('POST', '/webhooks', {
+            event: config.event,
+            url: config.callbackUrl,
+            includeMetadata: config.includeMetadata || false
+        });
+    }
+
+    async createWebhook(config: IWebhookConfig): Promise<IWebhookResponse> {
+        return this.request<IWebhookResponse>('POST', '/webhooks', {
+            event: config.event,
+            url: config.url,
+            includeMetadata: config.includeMetadata || false
+        });
+    }
+    async deleteWebhook(id: string): Promise<void> {
+        return this.request<void>('DELETE', `/webhooks/${id}`);
     }
 
     private async request<T>(

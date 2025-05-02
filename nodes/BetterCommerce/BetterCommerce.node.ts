@@ -54,6 +54,7 @@ export class BetterCommerce implements INodeType {
             },
             ...Object.values(MODULES).flatMap(module => module.description),
         ],
+       
     };
 
     async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -63,7 +64,16 @@ export class BetterCommerce implements INodeType {
         if (!module) {
             throw new NodeOperationError(this.getNode(), `Unsupported resource: ${resource}`);
         }
-        
+        if (operation === 'registerWebhook') {
+            // const event = this.getNodeParameter('event', 0) as string;
+            // const webhookUrl = this.getNodeParameter('webhookUrl', 0) as string;
+            
+            // Your webhook registration logic here
+            //const response = await registerWebhook(event, webhookUrl);
+            
+            //return [[{ json: response }]];
+            return [[{ json: {} }]]
+        }
         return module.execute.call(this, operation);
     }
 }

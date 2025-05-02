@@ -5,7 +5,7 @@ import {
   } from 'n8n-workflow';
   import { BetterCommerceClient} from '../../../Utils/Client';
   
-
+  export {Description}  from './Description'
   export async function execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const credentials = await this.getCredentials('betterCommerceApi');
     const client = new BetterCommerceClient(credentials, this,"customer"); // Pass 'this' as IExecuteFunctions

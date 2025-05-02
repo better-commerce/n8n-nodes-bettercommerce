@@ -40,7 +40,9 @@
     "dist/credentials/BetterCommerce.credentials.js"
   ],
   "nodes": [
-    "dist/nodes/BetterCommerce/BetterCommerce.node.js"
+    "dist/nodes/BetterCommerce/BetterCommerce.node.js",
+     "dist/nodes/BetterCommerce/BetterCommerceWebhook.node.js",
+     "dist/nodes/BetterCommerce/RegisterWebhook.node.js"
   ]
 },
   "devDependencies": {
