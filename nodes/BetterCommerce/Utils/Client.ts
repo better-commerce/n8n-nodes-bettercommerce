@@ -49,20 +49,60 @@ export class BetterCommerceClient {
         return this.request<T>('DELETE', endpoint);
     }
 
+    /**
+     * Create a new webhook
+     */
     public async createWebhook(config: IWebhookConfig): Promise<IWebhookResponse> {
-        return this.request<IWebhookResponse>('POST', '/webhooks', {
+        return this.create<IWebhookResponse>('/webhooks', {
             event: config.event,
             url: config.url,
-            ...(config.includeMetadata && { includeMetadata: true })
+            description: config.description || `Webhook for ${config.event}`,
+            isActive: config.isActive !== undefined ? config.isActive : true,
+            headers: config.headers || {},
+            includeMetadata: config.includeMetadata || false
         });
     }
 
+    /**
+     * Delete a webhook
+     */
     public async deleteWebhook(webhookId: string): Promise<void> {
-        return this.request<void>('DELETE', `/webhooks/${webhookId}`);
+        return this.delete<void>(`/webhooks/${webhookId}`);
     }
 
-    public async getWebhooks(): Promise<IWebhookResponse[]> {
-        return this.request<IWebhookResponse[]>('GET', '/webhooks');
+    /**
+     * Get all webhooks
+     */
+    public async getWebhooks(filters?: IDataObject): Promise<IWebhookResponse[]> {
+        return this.get<IWebhookResponse[]>('/webhooks', filters);
+    }
+
+    /**
+     * Get a webhook by ID
+     */
+    public async getWebhook(webhookId: string): Promise<IWebhookResponse> {
+        return this.get<IWebhookResponse>(`/webhooks/${webhookId}`);
+    }
+
+    /**
+     * Update a webhook
+     */
+    public async updateWebhook(webhookId: string, config: IDataObject): Promise<IWebhookResponse> {
+        return this.update<IWebhookResponse>(`/webhooks/${webhookId}`, config);
+    }
+
+    /**
+     * Activate a webhook
+     */
+    public async activateWebhook(webhookId: string): Promise<IWebhookResponse> {
+        return this.post<IWebhookResponse>(`/webhooks/${webhookId}/activate`, {});
+    }
+
+    /**
+     * Deactivate a webhook
+     */
+    public async deactivateWebhook(webhookId: string): Promise<IWebhookResponse> {
+        return this.post<IWebhookResponse>(`/webhooks/${webhookId}/deactivate`, {});
     }
 
     private async request<T>(

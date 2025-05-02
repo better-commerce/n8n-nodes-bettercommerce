@@ -1,4 +1,4 @@
-import { INodeProperties,IExecuteFunctions, jsonStringify } from 'n8n-workflow';
+import { INodeProperties, NodePropertyTypes, IExecuteFunctions, jsonStringify } from 'n8n-workflow';
 
 import * as Create from './Create/Action';
 import * as GetByEmail from './GetByEmail/Action';
@@ -11,7 +11,7 @@ export const description: INodeProperties[] = [
     {
         displayName: 'Operation',
         name: 'operation',
-        type: 'options',
+        type: 'options' as NodePropertyTypes,
         noDataExpression: true,
         displayOptions: {
             show: {

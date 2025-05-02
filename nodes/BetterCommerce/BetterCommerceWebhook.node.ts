@@ -5,7 +5,11 @@ import {
     IWebhookResponseData,
     ILoadOptionsFunctions,
     INodePropertyOptions,
+    IHookFunctions,
+    IDataObject,
+    NodeApiError,
 } from 'n8n-workflow';
+import { BetterCommerceClient } from './Utils/Client';
 
 export class BetterCommerceWebhook implements INodeType {
     description: INodeTypeDescription = {
@@ -44,13 +48,69 @@ export class BetterCommerceWebhook implements INodeType {
                 },
                 default: '',
                 required: true,
+                description: 'The event to listen to',
             },
             {
-                displayName: 'Include Metadata',
-                name: 'includeMetadata',
+                displayName: 'Register Webhook',
+                name: 'registerWebhook',
                 type: 'boolean',
-                default: false,
-                description: 'Whether to include additional event metadata in the webhook payload',
+                default: true,
+                description: 'Whether to register the webhook with BetterCommerce automatically',
+            },
+            {
+                displayName: 'Additional Fields',
+                name: 'additionalFields',
+                type: 'collection',
+                placeholder: 'Add Field',
+                default: {},
+                options: [
+                    {
+                        displayName: 'Include Metadata',
+                        name: 'includeMetadata',
+                        type: 'boolean',
+                        default: false,
+                        description: 'Whether to include additional event metadata in the webhook payload',
+                    },
+                    {
+                        displayName: 'Description',
+                        name: 'description',
+                        type: 'string',
+                        default: '',
+                        description: 'Description of the webhook',
+                    },
+                    {
+                        displayName: 'Headers',
+                        name: 'headers',
+                        type: 'fixedCollection',
+                        typeOptions: {
+                            multipleValues: true,
+                        },
+                        description: 'Custom headers to send with the webhook',
+                        default: {},
+                        options: [
+                            {
+                                name: 'header',
+                                displayName: 'Header',
+                                values: [
+                                    {
+                                        displayName: 'Name',
+                                        name: 'name',
+                                        type: 'string',
+                                        default: '',
+                                        description: 'Name of the header',
+                                    },
+                                    {
+                                        displayName: 'Value',
+                                        name: 'value',
+                                        type: 'string',
+                                        default: '',
+                                        description: 'Value of the header',
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
             },
         ],
     };
@@ -86,15 +146,99 @@ export class BetterCommerceWebhook implements INodeType {
         }
     };
 
+    // This method is called when the node is activated (when the workflow is activated)
+    async activate(this: IHookFunctions): Promise<boolean> {
+        const registerWebhook = this.getNodeParameter('registerWebhook', true) as boolean;
+        
+        if (registerWebhook) {
+            try {
+                const credentials = await this.getCredentials('betterCommerceApi');
+                const client = new BetterCommerceClient(credentials, this as any, 'webhook');
+                
+                const webhookUrl = this.getNodeWebhookUrl('default');
+                const event = this.getNodeParameter('event') as string;
+                const additionalFields = this.getNodeParameter('additionalFields', {}) as IDataObject;
+                
+                // Process headers if provided
+                const headers: Record<string, string> = {};
+                if (additionalFields.headers && (additionalFields.headers as IDataObject).header) {
+                    const headerItems = (additionalFields.headers as IDataObject).header as IDataObject[];
+                    for (const header of headerItems) {
+                        headers[header.name as string] = header.value as string;
+                    }
+                }
+                
+                // Create webhook configuration
+                const webhookConfig: IDataObject = {
+                    event,
+                    url: webhookUrl,
+                };
+
+                if (additionalFields.description) {
+                    webhookConfig.description = additionalFields.description as string;
+                }
+
+                if (additionalFields.includeMetadata !== undefined) {
+                    webhookConfig.includeMetadata = additionalFields.includeMetadata as boolean;
+                }
+
+                if (Object.keys(headers).length > 0) {
+                    webhookConfig.headers = headers;
+                }
+                
+                // Register the webhook with BetterCommerce
+                const response = await client.create<IDataObject>('/webhooks', webhookConfig);
+                
+                // Store the webhook ID for later deletion
+                const webhookData = this.getWorkflowStaticData('node');
+                webhookData.webhookId = response.id;
+                
+                return true;
+            } catch (error) {
+                throw new NodeApiError(this.getNode(), error);
+            }
+        }
+        
+        return true;
+    }
+
+    // This method is called when the node is deactivated (when the workflow is deactivated)
+    async deactivate(this: IHookFunctions): Promise<boolean> {
+        const registerWebhook = this.getNodeParameter('registerWebhook', true) as boolean;
+        
+        if (registerWebhook) {
+            try {
+                const webhookData = this.getWorkflowStaticData('node');
+                
+                if (webhookData.webhookId) {
+                    const credentials = await this.getCredentials('betterCommerceApi');
+                    const client = new BetterCommerceClient(credentials, this as any, 'webhook');
+                    
+                    // Delete the webhook from BetterCommerce
+                    await client.delete<void>(`/webhooks/${webhookData.webhookId}`);
+                    
+                    // Clear the stored webhook ID
+                    delete webhookData.webhookId;
+                }
+                
+                return true;
+            } catch (error) {
+                throw new NodeApiError(this.getNode(), error);
+            }
+        }
+        
+        return true;
+    }
+
     async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-        const body = this.getBodyData();
+        const bodyData = this.getBodyData();
         
         // You can add additional processing here if needed
         // For example, you might want to extract specific fields based on the event type
         
         return {
             workflowData: [
-                this.helpers.returnJsonArray(body),
+                this.helpers.returnJsonArray(bodyData),
             ],
         };
     }

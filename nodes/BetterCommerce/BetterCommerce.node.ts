@@ -1,24 +1,17 @@
 import {
     IExecuteFunctions,
+    INodeExecutionData,
     INodeType,
     INodeTypeDescription,
-    NodeOperationError,
-    INodeExecutionData
+    INodeProperties,
 } from 'n8n-workflow';
 
 import * as Customer from './Modules/Customer/Index';
-import * as Order from './Modules/Order/Index';
 import * as Product from './Modules/Product/Index';
+import * as Order from './Modules/Order/Index';
 import * as Quote from './Modules/Quote/Index';
+import * as Webhook from './Modules/Webhook/Index';
 import * as Trigger from './Modules/Trigger/Index';
-
-const MODULES = {
-    customer: Customer,
-    order: Order,
-    product: Product,
-    quote: Quote,
-    trigger: Trigger,
-};
 
 export class BetterCommerce implements INodeType {
     description: INodeTypeDescription = {
@@ -28,7 +21,7 @@ export class BetterCommerce implements INodeType {
         group: ['transform'],
         version: 1,
         subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-        description: 'Consume BetterCommerce API',
+        description: 'Work with BetterCommerce data',
         defaults: {
             name: 'BetterCommerce',
         },
@@ -64,30 +57,56 @@ export class BetterCommerce implements INodeType {
                         value: 'quote',
                     },
                     {
+                        name: 'Webhook',
+                        value: 'webhook',
+                    },
+                    {
                         name: 'Trigger',
                         value: 'trigger',
                     },
                 ],
                 default: 'customer',
             },
-            ...Customer.description,
-            ...Order.description,
-            ...Product.description,
-            ...Quote.description,
-            ...Trigger.description,
+            ...(Customer.description as INodeProperties[]),
+            ...(Product.description as INodeProperties[]),
+            ...(Order.description as INodeProperties[]),
+            ...(Quote.description as INodeProperties[]),
+            ...(Webhook.description as INodeProperties[]),
+            ...(Trigger.description as INodeProperties[]),
         ],
     };
 
     async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+        // We'll keep this but use it in the module execution
+        const items = this.getInputData();
         const resource = this.getNodeParameter('resource', 0) as string;
         const operation = this.getNodeParameter('operation', 0) as string;
-        const module = MODULES[resource as keyof typeof MODULES];
-        if (!module) {
-            throw new NodeOperationError(this.getNode(), `Unsupported resource: ${resource}`);
+        let returnData: INodeExecutionData[][] = [[]];
+
+        // Map resources to their respective modules
+        const MODULES = {
+            'customer': Customer,
+            'product': Product,
+            'order': Order,
+            'quote': Quote,
+            'webhook': Webhook,
+            'trigger': Trigger,
+        };
+
+        if (resource === 'trigger' && operation === 'webhook') {
+            // Special case for trigger webhook
+            returnData = await Trigger.execute.call(this);
+        } else {
+            // For all other resources, use the module's execute function
+            const module = MODULES[resource as keyof typeof MODULES];
+            if (module) {
+                // Pass items to the module execute function
+                returnData = await module.execute.call(this, operation, items);
+            } else {
+                throw new Error(`Unsupported resource: ${resource}`);
+            }
         }
-        return module.execute.call(this, operation);
+
+        return returnData;
     }
 }
-
-
-
