@@ -35,18 +35,18 @@ export async function execute(this: IExecuteFunctions): Promise<INodeExecutionDa
             };
             
             // Register the webhook with BetterCommerce
-            const response = await client.createWebhook(webhookConfig);
+            const response = await client.createWebhook(webhookConfig) as IDataObject;
             
             // Store the webhook ID for later deletion
             const webhookData = this.getWorkflowStaticData('node');
-            webhookData.webhookId = response.id;
+            webhookData.webhookId = response.recordId || response.id;
             
             returnData.push({
                 json: {
                     success: true,
-                    webhookId: response.id,
-                    event: response.event,
-                    url: response.url,
+                    webhookId: response.recordId || response.id,
+                    event: `${response.entityType}.${response.eventType}`,
+                    url: response.destination,
                     createdAt: response.createdAt,
                 }
             });

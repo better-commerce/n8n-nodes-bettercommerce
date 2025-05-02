@@ -55,14 +55,14 @@ export async function execute(this: IExecuteFunctions): Promise<INodeExecutionDa
             }
             
             // Update the webhook
-            const response = await client.updateWebhook(webhookId, webhookConfig);
-            
+            const response = await client.updateWebhook(webhookId, webhookConfig) as IDataObject;
+
             returnData.push({
                 json: {
                     success: true,
-                    webhookId: response.id,
-                    event: response.event,
-                    url: response.url,
+                    webhookId: response.recordId || response.id,
+                    event: `${response.entityType}.${response.eventType}`,
+                    url: response.destination,
                     updatedAt: response.updatedAt,
                 }
             });

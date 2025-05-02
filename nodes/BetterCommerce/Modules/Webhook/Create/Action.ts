@@ -5,16 +5,8 @@ import {
     NodeApiError,
 } from 'n8n-workflow';
 import { BetterCommerceClient } from '../../../Utils/Client';
+import { IWebhookConfig } from '../../../Utils/Interfaces';
 export { Description } from './Description';
-
-// Define the webhook configuration interface
-interface IWebhookConfig {
-    event: string;
-    url: string;
-    description?: string;
-    includeMetadata?: boolean;
-    headers?: Record<string, string>;
-}
 
 export async function execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const credentials = await this.getCredentials('betterCommerceApi');
@@ -47,6 +39,10 @@ export async function execute(this: IExecuteFunctions): Promise<INodeExecutionDa
                 webhookConfig.description = additionalFields.description as string;
             }
 
+            if (additionalFields.isActive !== undefined) {
+                webhookConfig.isActive = additionalFields.isActive as boolean;
+            }
+
             if (additionalFields.includeMetadata !== undefined) {
                 webhookConfig.includeMetadata = additionalFields.includeMetadata as boolean;
             }
@@ -56,14 +52,17 @@ export async function execute(this: IExecuteFunctions): Promise<INodeExecutionDa
             }
             
             // Register the webhook with BetterCommerce
-            const response = await client.createWebhook(webhookConfig);
+            const response = await client.createWebhook(webhookConfig) as IDataObject;
             
             returnData.push({
                 json: {
                     success: true,
-                    webhookId: response.id,
-                    event: response.event,
-                    url: response.url,
+                    webhookId: response.recordId || response.id,
+                    name: response.name,
+                    entityType: response.entityType,
+                    eventType: response.eventType,
+                    destination: response.destination,
+                    isActive: response.isActive,
                     createdAt: response.createdAt,
                 }
             });
@@ -78,5 +77,7 @@ export async function execute(this: IExecuteFunctions): Promise<INodeExecutionDa
 
     return [returnData];
 }
+
+
 
 

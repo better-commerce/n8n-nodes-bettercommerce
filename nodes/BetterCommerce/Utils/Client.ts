@@ -5,12 +5,11 @@ import {
     NodeApiError,
     IExecuteFunctions,
     IDataObject,
-
     ITriggerFunctions
 } from 'n8n-workflow';
 import axios from 'axios';
 import { UrlManager } from './UrlManager';
-import { IWebhookConfig, IWebhookResponse } from './Interfaces';
+import { IWebhookConfig } from './Interfaces';
 
 export class BetterCommerceClient {
     private credentials: ICredentialDataDecryptedObject;
@@ -52,57 +51,64 @@ export class BetterCommerceClient {
     /**
      * Create a new webhook
      */
-    public async createWebhook(config: IWebhookConfig): Promise<IWebhookResponse> {
-        return this.create<IWebhookResponse>('/webhooks', {
-            event: config.event,
-            url: config.url,
-            description: config.description || `Webhook for ${config.event}`,
+    public async createWebhook(config: IWebhookConfig): Promise<IDataObject> {
+        // Map our simplified config to the expected BetterCommerce format
+        const webhookData: IDataObject = {
+            name: config.description || `Webhook for ${config.event}`,
+            entityType: config.event.split('.')[0], // e.g., "order" from "order.created"
+            eventType: config.event.split('.')[1], // e.g., "created" from "order.created"
+            webhookEntityTypes: 0, // Default value
+            webhookEventTypes: 1, // Default value
+            method: 0, // Assuming 0 is POST
+            destination: config.url,
             isActive: config.isActive !== undefined ? config.isActive : true,
-            headers: config.headers || {},
-            includeMetadata: config.includeMetadata || false
-        });
+            targetType: 1, // Default value
+            customHeaders: config.headers ? Object.entries(config.headers).map(([key, value]) => ({ key, value })) : []
+        };
+        
+        return this.create<IDataObject>('/webhook', webhookData);
     }
 
     /**
      * Delete a webhook
      */
     public async deleteWebhook(webhookId: string): Promise<void> {
-        return this.delete<void>(`/webhooks/${webhookId}`);
+        return this.delete<void>(`/webhook/${webhookId}`);
     }
 
     /**
      * Get all webhooks
      */
-    public async getWebhooks(filters?: IDataObject): Promise<IWebhookResponse[]> {
-        return this.get<IWebhookResponse[]>('/webhooks', filters);
+    public async getWebhooks(filters?: IDataObject): Promise<IDataObject[]> {
+        return this.get<IDataObject[]>('/webhook', filters);
     }
 
     /**
      * Get a webhook by ID
      */
-    public async getWebhook(webhookId: string): Promise<IWebhookResponse> {
-        return this.get<IWebhookResponse>(`/webhooks/${webhookId}`);
+    public async getWebhook(webhookId: string): Promise<IDataObject> {
+        return this.get<IDataObject>(`/webhook/${webhookId}`);
     }
 
     /**
      * Update a webhook
      */
-    public async updateWebhook(webhookId: string, config: IDataObject): Promise<IWebhookResponse> {
-        return this.update<IWebhookResponse>(`/webhooks/${webhookId}`, config);
+    public async updateWebhook(webhookId: string, config: IDataObject): Promise<IDataObject> {
+        return this.update<IDataObject>(`/webhooks/${webhookId}`, config);
     }
 
     /**
      * Activate a webhook
      */
-    public async activateWebhook(webhookId: string): Promise<IWebhookResponse> {
-        return this.post<IWebhookResponse>(`/webhooks/${webhookId}/activate`, {});
+    public async activateWebhook(webhookId: string): Promise<IDataObject> {
+        return this.post<IDataObject>(`/webhooks/${webhookId}/activate`, {});
     }
 
     /**
      * Deactivate a webhook
      */
-    public async deactivateWebhook(webhookId: string): Promise<IWebhookResponse> {
-        return this.post<IWebhookResponse>(`/webhooks/${webhookId}/deactivate`, {});
+    public async deactivateWebhook(webhookId: string): Promise<IDataObject> {
+        return this.post<IDataObject>(`/webhooks/${webhookId}/deactivate`, {});
     }
 
     private async request<T>(

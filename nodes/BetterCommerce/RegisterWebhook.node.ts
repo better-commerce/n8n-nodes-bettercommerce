@@ -181,14 +181,14 @@ export class RegisterWebhook implements INodeType {
                 }
                 
                 // Register the webhook with BetterCommerce
-                const response = await client.createWebhook(webhookConfig);
-                
+                const response = await client.createWebhook(webhookConfig) as IDataObject;
+
                 returnData.push({
                     json: {
                         success: true,
                         webhookId: response.id,
-                        event: response.event,
-                        url: response.url,
+                        event: `${response.entityType}.${response.eventType}`,
+                        url: response.destination,
                         createdAt: response.createdAt,
                     }
                 });

@@ -28,7 +28,7 @@ export async function execute(this: IExecuteFunctions): Promise<INodeExecutionDa
                 const webhook = await client.getWebhook(webhookId);
                 // Convert webhook to IDataObject to satisfy the type requirement
                 returnData.push({ 
-                    json: webhook as unknown as IDataObject 
+                    json: webhook as IDataObject 
                 });
             }
         } catch (error) {
@@ -42,3 +42,4 @@ export async function execute(this: IExecuteFunctions): Promise<INodeExecutionDa
 
     return [returnData];
 }
+
