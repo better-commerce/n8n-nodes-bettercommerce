@@ -15,7 +15,7 @@ export class BetterCommerceWebhook implements INodeType {
     description: INodeTypeDescription = {
         displayName: 'BetterCommerce Webhook',
         name: 'betterCommerceWebhook',
-        icon: 'file:betterCommerce.svg',
+        icon: 'file:betterlogo.svg',
         group: ['trigger'],
         version: 1,
         description: 'Handle BetterCommerce webhook events',

@@ -23,8 +23,10 @@ export async function execute(this: IExecuteFunctions): Promise<INodeExecutionDa
             try {
                 // Try to get customer by email
                 const customerResponse = await customerClient.post<IDataObject>(`/${customerEmail}/exists`, {});
-                if (customerResponse.result && typeof customerResponse.result === 'object') {
-                    userId = (customerResponse.result as IDataObject).userId as string || userId;
+                if (customerResponse.result && Array.isArray(customerResponse.result) && customerResponse.result.length > 0) {
+                    // Fix: Extract the userId from the first item in the result array
+                    const customer = customerResponse.result[0] as IDataObject;
+                    userId = customer.userId as string || userId;
                     console.log(`Customer exists with userId: ${userId}`);
                 }
             } catch (error) {
@@ -41,7 +43,7 @@ export async function execute(this: IExecuteFunctions): Promise<INodeExecutionDa
                 });
                 
                 if (createResponse.result && typeof createResponse.result === 'object') {
-                    userId = (createResponse.result as IDataObject).userId as string || userId;
+                    userId = (createResponse.result as IDataObject).id as string || userId;
                     console.log(`Created new customer with userId: ${userId}`);
                 }
             }

@@ -5,7 +5,7 @@ import {
     NodeApiError,
     IExecuteFunctions,
     IDataObject,
-    jsonStringify,
+
     ITriggerFunctions
 } from 'n8n-workflow';
 import axios from 'axios';
@@ -111,7 +111,6 @@ export class BetterCommerceClient {
         body?: IDataObject,
         query?: IDataObject
     ): Promise<T> {
-
         const token = await getAccessToken(this.executeFunctions, this.credentials);
         const baseUrl = UrlManager.getModuleUrl(this.credentials, this.module);     
         const options: IHttpRequestOptions = {
@@ -122,13 +121,24 @@ export class BetterCommerceClient {
                 'Authorization': `Bearer ${token}`,
             },
         };
-        console.log(jsonStringify(options))
-        if (body) options.body = body;
-        if (query) options.qs = query;
+        
+        console.log(`Making ${method} request to: ${baseUrl}${endpoint}`);
+        
+        if (body) {
+            options.body = body;
+            console.log('Request body:', JSON.stringify(body));
+        }
+        if (query) {
+            options.qs = query;
+            console.log('Request query:', JSON.stringify(query));
+        }
 
         try {
-            return await this.executeFunctions.helpers.httpRequest(options);
+            const response = await this.executeFunctions.helpers.httpRequest(options);
+            console.log('Response received:', JSON.stringify(response));
+            return response;
         } catch (error) {
+            console.log('Request failed:', error);
             throw new NodeApiError(this.executeFunctions.getNode(), error);
         }
     }

@@ -13,7 +13,7 @@ export class RegisterWebhook implements INodeType {
     description: INodeTypeDescription = {
         displayName: 'BetterCommerce Register Webhook',
         name: 'registerWebhook',
-        icon: 'file:betterCommerce.svg',
+        icon: 'file:betterlogo.svg',
         group: ['transform'],
         version: 1,
         description: 'Register a webhook with BetterCommerce',

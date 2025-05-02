@@ -17,7 +17,7 @@ export class BetterCommerce implements INodeType {
     description: INodeTypeDescription = {
         displayName: 'BetterCommerce',
         name: 'betterCommerce',
-        icon: 'file:betterCommerce.svg',
+        icon: 'file:betterlogo.svg',
         group: ['transform'],
         version: 1,
         subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
