@@ -27,7 +27,15 @@ export class BetterCommerceClient {
     }
 
     public async create<T>(endpoint: string, data: IDataObject): Promise<T> {
-        return this.request<T>('POST', endpoint, data);
+        console.log(`BetterCommerceClient: Creating resource at ${endpoint}`, data);
+        try {
+            const response = await this.request<T>('POST', endpoint, data);
+            console.log(`BetterCommerceClient: Successfully created resource at ${endpoint}`, response);
+            return response;
+        } catch (error) {
+            console.error(`BetterCommerceClient: Error creating resource at ${endpoint}`, error);
+            throw error;
+        }
     }
     
     // just not to confuse with create word
@@ -52,20 +60,27 @@ export class BetterCommerceClient {
      * Create a new webhook
      */
     public async createWebhook(config: IWebhookConfig): Promise<IDataObject> {
+        console.log('BetterCommerceClient: createWebhook called', config);
+        
         // Map our simplified config to the expected BetterCommerce format
+        const eventParts = config.event.split('.');
+        const entityType = eventParts[0];
+        const eventType = eventParts.slice(1).join('.');
+        
         const webhookData: IDataObject = {
             name: config.description || `Webhook for ${config.event}`,
-            entityType: config.event.split('.')[0], // e.g., "order" from "order.created"
-            eventType: config.event.split('.')[1], // e.g., "created" from "order.created"
-            webhookEntityTypes: 0, // Default value
-            webhookEventTypes: 1, // Default value
-            method: 0, // Assuming 0 is POST
+            entityType: entityType,
+            eventType: eventType,
+            webhookEntityTypes: 0,
+            webhookEventTypes: 1,
+            method: 0,
             destination: config.url,
             isActive: config.isActive !== undefined ? config.isActive : true,
-            targetType: 1, // Default value
+            targetType: 1,
             customHeaders: config.headers ? Object.entries(config.headers).map(([key, value]) => ({ key, value })) : []
         };
         
+        console.log('BetterCommerceClient: Webhook payload prepared', webhookData);
         return this.create<IDataObject>('/webhook', webhookData);
     }
 
@@ -73,6 +88,7 @@ export class BetterCommerceClient {
      * Delete a webhook
      */
     public async deleteWebhook(webhookId: string): Promise<void> {
+        console.log('BetterCommerceClient: deleteWebhook called', webhookId);
         return this.delete<void>(`/webhook/${webhookId}`);
     }
 
@@ -80,6 +96,7 @@ export class BetterCommerceClient {
      * Get all webhooks
      */
     public async getWebhooks(filters?: IDataObject): Promise<IDataObject[]> {
+        console.log('BetterCommerceClient: getWebhooks called', filters);
         return this.get<IDataObject[]>('/webhook', filters);
     }
 
@@ -87,6 +104,7 @@ export class BetterCommerceClient {
      * Get a webhook by ID
      */
     public async getWebhook(webhookId: string): Promise<IDataObject> {
+        console.log('BetterCommerceClient: getWebhook called', webhookId);
         return this.get<IDataObject>(`/webhook/${webhookId}`);
     }
 
@@ -94,7 +112,8 @@ export class BetterCommerceClient {
      * Update a webhook
      */
     public async updateWebhook(webhookId: string, config: IDataObject): Promise<IDataObject> {
-        return this.update<IDataObject>(`/webhooks/${webhookId}`, config);
+        console.log('BetterCommerceClient: updateWebhook called', { webhookId, config });
+        return this.update<IDataObject>(`/webhook/${webhookId}`, config);
     }
 
     /**
@@ -117,8 +136,14 @@ export class BetterCommerceClient {
         body?: IDataObject,
         query?: IDataObject
     ): Promise<T> {
+        console.log(`BetterCommerceClient: Starting ${method} request to ${endpoint}`);
+        
         const token = await getAccessToken(this.executeFunctions, this.credentials);
-        const baseUrl = UrlManager.getModuleUrl(this.credentials, this.module);     
+        console.log('BetterCommerceClient: Got access token');
+        
+        const baseUrl = UrlManager.getModuleUrl(this.credentials, this.module);
+        console.log(`BetterCommerceClient: Base URL for module ${this.module}: ${baseUrl}`);
+        
         const options: IHttpRequestOptions = {
             method,
             url: `${baseUrl}${endpoint}`,
@@ -128,23 +153,27 @@ export class BetterCommerceClient {
             },
         };
         
-        console.log(`Making ${method} request to: ${baseUrl}${endpoint}`);
+        console.log(`BetterCommerceClient: Making ${method} request to: ${baseUrl}${endpoint}`);
         
         if (body) {
             options.body = body;
-            console.log('Request body:', JSON.stringify(body));
+            console.log('BetterCommerceClient: Request body:', JSON.stringify(body));
         }
         if (query) {
             options.qs = query;
-            console.log('Request query:', JSON.stringify(query));
+            console.log('BetterCommerceClient: Request query:', JSON.stringify(query));
         }
 
         try {
+            console.log('BetterCommerceClient: Sending request with options:', JSON.stringify(options, null, 2));
             const response = await this.executeFunctions.helpers.httpRequest(options);
-            console.log('Response received:', JSON.stringify(response));
+            console.log('BetterCommerceClient: Response received:', JSON.stringify(response));
             return response;
         } catch (error) {
-            console.log('Request failed:', error);
+            console.error('BetterCommerceClient: Request failed:', error);
+            if (error.response) {
+                console.error('BetterCommerceClient: Error response:', JSON.stringify(error.response.data));
+            }
             throw new NodeApiError(this.executeFunctions.getNode(), error);
         }
     }
@@ -152,22 +181,37 @@ export class BetterCommerceClient {
 // ---- OUTSIDE the class ----
 
 export async function getAccessToken(
-	that: IExecuteFunctions,
-	credentials: any
+    that: IExecuteFunctions,
+    credentials: any
 ): Promise<string> {
-	const authUrl = `${UrlManager.getModuleUrl(credentials, 'auth')}/oauth/token`;
-	const { clientId, clientSecret } = credentials;
-	const response = await axios.post(
-		authUrl,
-		new URLSearchParams({
-			grant_type: 'client_credentials',
-			client_id: clientId,
-			client_secret: clientSecret,
-		}),
-		{
-			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		},
-	);
-
-	return response.data.access_token;
+    console.log('getAccessToken: Starting token retrieval');
+    const authUrl = `${UrlManager.getModuleUrl(credentials, 'auth')}/oauth/token`;
+    console.log(`getAccessToken: Auth URL: ${authUrl}`);
+    
+    const { clientId, clientSecret } = credentials;
+    console.log(`getAccessToken: Using client ID: ${clientId}`);
+    
+    try {
+        console.log('getAccessToken: Making token request');
+        const response = await axios.post(
+            authUrl,
+            new URLSearchParams({
+                grant_type: 'client_credentials',
+                client_id: clientId,
+                client_secret: clientSecret,
+            }),
+            {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            },
+        );
+        
+        console.log('getAccessToken: Token received successfully');
+        return response.data.access_token;
+    } catch (error) {
+        console.error('getAccessToken: Error getting token:', error);
+        if (error.response) {
+            console.error('getAccessToken: Error response:', JSON.stringify(error.response.data));
+        }
+        throw error;
+    }
 }

@@ -8,19 +8,27 @@ import {
     IHookFunctions,
     IDataObject,
     NodeApiError,
+    LoggerProxy,
 } from 'n8n-workflow';
 import { BetterCommerceClient } from './Utils/Client';
 
+// Single log when module is loaded
+LoggerProxy.info('BetterCommerce Webhook: Module loaded');
+
 export class BetterCommerceWebhook implements INodeType {
+    constructor() {
+        LoggerProxy.info('BetterCommerce Webhook: Constructor called');
+    }
+    
     description: INodeTypeDescription = {
-        displayName: 'BetterCommerce Webhook',
-        name: 'betterCommerceWebhook',
+        displayName: 'BetterCommerce Trigger',
+        name: 'betterCommerceTrigger',
         icon: 'file:betterlogo.svg',
         group: ['trigger'],
         version: 1,
         description: 'Handle BetterCommerce webhook events',
         defaults: {
-            name: 'BetterCommerce Webhook',
+            name: 'BetterCommerce Trigger',
         },
         inputs: [],
         outputs: ['main'],
@@ -36,6 +44,9 @@ export class BetterCommerceWebhook implements INodeType {
                 httpMethod: 'POST',
                 responseMode: 'onReceived',
                 path: 'webhook',
+                isActive: true,
+                restartWebhook: true,
+                activationMode: 'always',
             },
         ],
         properties: [
@@ -46,16 +57,9 @@ export class BetterCommerceWebhook implements INodeType {
                 typeOptions: {
                     loadOptionsMethod: 'getWebhookEvents',
                 },
-                default: '',
+                default: 'order.created',
                 required: true,
                 description: 'The event to listen to',
-            },
-            {
-                displayName: 'Register Webhook',
-                name: 'registerWebhook',
-                type: 'boolean',
-                default: true,
-                description: 'Whether to register the webhook with BetterCommerce automatically',
             },
             {
                 displayName: 'Additional Fields',
@@ -65,27 +69,27 @@ export class BetterCommerceWebhook implements INodeType {
                 default: {},
                 options: [
                     {
-                        displayName: 'Include Metadata',
-                        name: 'includeMetadata',
-                        type: 'boolean',
-                        default: false,
-                        description: 'Whether to include additional event metadata in the webhook payload',
-                    },
-                    {
                         displayName: 'Description',
                         name: 'description',
                         type: 'string',
                         default: '',
-                        description: 'Description of the webhook',
+                        description: 'Description for the webhook',
+                    },
+                    {
+                        displayName: 'Include Metadata',
+                        name: 'includeMetadata',
+                        type: 'boolean',
+                        default: false,
+                        description: 'Whether to include metadata in the webhook payload',
                     },
                     {
                         displayName: 'Headers',
                         name: 'headers',
+                        placeholder: 'Add Header',
                         type: 'fixedCollection',
                         typeOptions: {
                             multipleValues: true,
                         },
-                        description: 'Custom headers to send with the webhook',
                         default: {},
                         options: [
                             {
@@ -115,6 +119,7 @@ export class BetterCommerceWebhook implements INodeType {
         ],
     };
 
+    // Methods to load options dynamically
     methods = {
         loadOptions: {
             async getWebhookEvents(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
@@ -142,104 +147,129 @@ export class BetterCommerceWebhook implements INodeType {
                     { name: 'Quote Deleted', value: 'quote.deleted' },
                     { name: 'Quote Status Changed', value: 'quote.status.changed' },
                 ];
-            }
-        }
+            },
+        },
     };
 
     // This method is called when the node is activated (when the workflow is activated)
     async activate(this: IHookFunctions): Promise<boolean> {
-        const registerWebhook = this.getNodeParameter('registerWebhook', true) as boolean;
+        LoggerProxy.info('BetterCommerce Webhook: ACTIVATE method called');
         
-        if (registerWebhook) {
-            try {
-                const credentials = await this.getCredentials('betterCommerceApi');
-                const client = new BetterCommerceClient(credentials, this as any, 'webhook');
-                
-                const webhookUrl = this.getNodeWebhookUrl('default');
-                const event = this.getNodeParameter('event') as string;
-                const additionalFields = this.getNodeParameter('additionalFields', {}) as IDataObject;
-                
-                // Process headers if provided
-                const headers: Record<string, string> = {};
-                if (additionalFields.headers && (additionalFields.headers as IDataObject).header) {
-                    const headerItems = (additionalFields.headers as IDataObject).header as IDataObject[];
-                    for (const header of headerItems) {
-                        headers[header.name as string] = header.value as string;
-                    }
-                }
-                
-                // Create webhook configuration
-                const webhookConfig: IDataObject = {
-                    event,
-                    url: webhookUrl,
-                };
-
-                if (additionalFields.description) {
-                    webhookConfig.description = additionalFields.description as string;
-                }
-
-                if (additionalFields.includeMetadata !== undefined) {
-                    webhookConfig.includeMetadata = additionalFields.includeMetadata as boolean;
-                }
-
-                if (Object.keys(headers).length > 0) {
-                    webhookConfig.headers = headers;
-                }
-                
-                // Register the webhook with BetterCommerce
-                const response = await client.create<IDataObject>('/webhooks', webhookConfig);
-                
-                // Store the webhook ID for later deletion
-                const webhookData = this.getWorkflowStaticData('node');
-                webhookData.webhookId = response.id;
-                
-                return true;
-            } catch (error) {
-                throw new NodeApiError(this.getNode(), error);
+        try {
+            const staticData = this.getWorkflowStaticData('node');
+            const credentials = await this.getCredentials('betterCommerceApi');
+            const client = new BetterCommerceClient(credentials, this as any, 'webhook');
+            
+            // Ensure webhookUrl is a string
+            const webhookUrl = this.getNodeWebhookUrl('default');
+            if (!webhookUrl) {
+                throw new Error('Failed to get webhook URL');
             }
+            
+            const event = this.getNodeParameter('event') as string;
+            const additionalFields = this.getNodeParameter('additionalFields', {}) as IDataObject;
+            
+            // Process headers if provided
+            const headers: Record<string, string> = {};
+            if (additionalFields.headers && (additionalFields.headers as IDataObject).header) {
+                const headerItems = (additionalFields.headers as IDataObject).header as IDataObject[];
+                for (const header of headerItems) {
+                    headers[header.name as string] = header.value as string;
+                }
+            }
+            
+            // Split the event into entity type and event type
+            const eventParts = event.split('.');
+            const entityType = eventParts[0];
+            const eventType = eventParts.slice(1).join('.');
+            
+            // Create webhook configuration
+            const webhookPayload: IDataObject = {
+                name: additionalFields.description as string || `n8n Webhook for ${event}`,
+                entityType: entityType,
+                eventType: eventType,
+                webhookEntityTypes: 0,
+                webhookEventTypes: 1,
+                method: 0,
+                destination: webhookUrl,
+                isActive: true,
+                targetType: 1,
+                customHeaders: Object.keys(headers).length > 0 
+                    ? Object.entries(headers).map(([key, value]) => ({ key, value })) 
+                    : []
+            };
+            
+            // Add additional fields if provided
+            if (additionalFields.includeMetadata !== undefined) {
+                webhookPayload.includeMetadata = additionalFields.includeMetadata as boolean;
+            }
+            
+            // Register the webhook with BetterCommerce
+            const response = await client.create<IDataObject>('/webhook', webhookPayload);
+            
+            // Store the webhook ID for later deletion
+            staticData.webhookId = response.id || response.recordId;
+            LoggerProxy.info('BetterCommerce Webhook: Webhook registered successfully');
+            
+            return true;
+        } catch (error) {
+            LoggerProxy.error('BetterCommerce Webhook: Error in activate method', { error });
+            throw new NodeApiError(this.getNode(), error);
         }
-        
-        return true;
     }
 
     // This method is called when the node is deactivated (when the workflow is deactivated)
     async deactivate(this: IHookFunctions): Promise<boolean> {
-        const registerWebhook = this.getNodeParameter('registerWebhook', true) as boolean;
+        LoggerProxy.info('BetterCommerce Webhook: DEACTIVATE method called');
         
-        if (registerWebhook) {
-            try {
-                const webhookData = this.getWorkflowStaticData('node');
+        try {
+            const webhookData = this.getWorkflowStaticData('node');
+            
+            if (webhookData.webhookId) {
+                const credentials = await this.getCredentials('betterCommerceApi');
+                const client = new BetterCommerceClient(credentials, this as any, 'webhook');
                 
-                if (webhookData.webhookId) {
-                    const credentials = await this.getCredentials('betterCommerceApi');
-                    const client = new BetterCommerceClient(credentials, this as any, 'webhook');
-                    
-                    // Delete the webhook from BetterCommerce
-                    await client.delete<void>(`/webhooks/${webhookData.webhookId}`);
-                    
-                    // Clear the stored webhook ID
-                    delete webhookData.webhookId;
-                }
+                // Delete the webhook from BetterCommerce
+                await client.delete<void>(`/webhook/${webhookData.webhookId}`);
+                LoggerProxy.info('BetterCommerce Webhook: Webhook deleted successfully');
                 
-                return true;
-            } catch (error) {
-                throw new NodeApiError(this.getNode(), error);
+                // Clear the stored webhook ID
+                delete webhookData.webhookId;
+            } else {
+                LoggerProxy.warn('BetterCommerce Webhook: No webhook ID found in static data');
             }
+            
+            return true;
+        } catch (error) {
+            LoggerProxy.error('BetterCommerce Webhook: Error in deactivate method', { error });
+            throw new NodeApiError(this.getNode(), error);
         }
-        
-        return true;
     }
 
     async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-        const bodyData = this.getBodyData();
+        LoggerProxy.info('BetterCommerce Webhook: WEBHOOK method called');
         
-        // You can add additional processing here if needed
-        // For example, you might want to extract specific fields based on the event type
-        
-        return {
-            workflowData: [
-                this.helpers.returnJsonArray(bodyData),
-            ],
-        };
+        try {
+            const bodyData = this.getBodyData() as IDataObject;
+            const eventType = this.getNodeParameter('event') as string;
+            
+            // Optional: Add any data transformation specific to the event type
+            let processedData: IDataObject = bodyData;
+            
+            // Example of event-specific processing
+            if (eventType === 'order.created' && bodyData.order) {
+                // Extract just the order data
+                processedData = bodyData.order as IDataObject;
+            }
+            
+            return {
+                workflowData: [
+                    this.helpers.returnJsonArray(processedData),
+                ],
+            };
+        } catch (error) {
+            LoggerProxy.error('BetterCommerce Webhook: Error in webhook method', { error });
+            throw new NodeApiError(this.getNode(), error);
+        }
     }
 }

@@ -33,18 +33,17 @@
   "files": [
     "dist"
   ],
-"n8n": {
-  "name": "n8n-nodes-bettercommerce",
-  "n8nNodesApiVersion": 1,
-  "credentials": [
-    "dist/credentials/BetterCommerce.credentials.js"
-  ],
-  "nodes": [
-    "dist/nodes/BetterCommerce/BetterCommerce.node.js",
-     "dist/nodes/BetterCommerce/BetterCommerceWebhook.node.js",
-     "dist/nodes/BetterCommerce/RegisterWebhook.node.js"
-  ]
-},
+  "n8n": {
+    "name": "n8n-nodes-bettercommerce",
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/BetterCommerce.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/BetterCommerce/BetterCommerce.node.js",
+      "dist/nodes/BetterCommerce/BetterCommerceWebhook.node.js"
+    ]
+  },
   "devDependencies": {
     "@typescript-eslint/parser": "^7.15.0",
     "eslint": "^8.57.0",

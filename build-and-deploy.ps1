@@ -8,5 +8,5 @@ $destinationPath = "D:\Projects\Omnicx-New\Microservices20\n8n-custom\n8n-nodes-
 Copy-Item -Path "$sourcePath\*" -Destination $destinationPath -Recurse -Force
 
 # 3. Restart the Docker container (replace <container_id> with the actual container ID)
-$containerId = "63dadf044ce7"
+$containerId = "181cbbda5546"
 docker restart $containerId

@@ -56,6 +56,7 @@ export class BetterCommerce implements INodeType {
                         name: 'Quote',
                         value: 'quote',
                     },
+                    // Keep the webhook resource for other webhook operations like listing or deleting
                     {
                         name: 'Webhook',
                         value: 'webhook',

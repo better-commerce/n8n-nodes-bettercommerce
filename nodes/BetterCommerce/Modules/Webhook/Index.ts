@@ -16,18 +16,6 @@ export const description = [
         },
         options: [
             {
-                name: 'Create',
-                value: 'create',
-                description: 'Create a new webhook',
-                action: 'Create a webhook',
-            },
-            {
-                name: 'Update',
-                value: 'update',
-                description: 'Update an existing webhook',
-                action: 'Update a webhook',
-            },
-            {
                 name: 'Get',
                 value: 'get',
                 description: 'Get webhook(s)',
@@ -40,7 +28,7 @@ export const description = [
                 action: 'Delete a webhook',
             },
         ],
-        default: 'create',
+        default: 'get',
     },
     ...Create.Description,
     ...Delete.Description,
@@ -52,9 +40,6 @@ export async function execute(
     operation: string,
     items?: INodeExecutionData[]
 ): Promise<INodeExecutionData[][]> {
-    if (operation === 'create') {
-        return await Create.execute.call(this);
-    }
     if (operation === 'delete') {
         return await Delete.execute.call(this);
     }
@@ -64,3 +49,4 @@ export async function execute(
     
     throw new Error(`Unsupported operation: ${operation}`);
 }
+
