@@ -13,13 +13,13 @@ import {
 import { BetterCommerceClient } from './Utils/Client';
 
 export class BetterCommerceWebhook implements INodeType {
-    private static activations: number = 0;
+   // private static activations: number = 0;
     description: INodeTypeDescription = {
         displayName: 'BetterCommerce Webhook',
         name: 'betterCommerceWebhook',
         icon: 'file:betterlogo.svg',
         group: ['trigger'],
-        version: 1,
+        version: 2,
         description: 'Handle BetterCommerce webhook events',
         defaults: {
             name: 'BetterCommerce Webhook',
@@ -28,10 +28,13 @@ export class BetterCommerceWebhook implements INodeType {
         outputs: ['main'],
         webhooks: [
             {
-                name: 'default',
+                name: 'default',    
                 httpMethod: 'POST',
                 responseMode: 'onReceived',
                 path: 'n8n-webhook',
+                // isActive: true,
+                // restartWebhook: true,
+                // activationMode: 'always',
             },
         ],
         properties: [
@@ -86,6 +89,7 @@ export class BetterCommerceWebhook implements INodeType {
     // This method is called when the workflow is activated
     async activate(this: IHookFunctions): Promise<boolean> {
         // Get the webhook URL
+        console.log('BETTERCOMMERCE WEBHOOK ACTIVATE CALLED');
         const webhookUrl = this.getNodeWebhookUrl('default');
         console.log('Webhook URL:', webhookUrl);
 
@@ -178,14 +182,25 @@ export class BetterCommerceWebhook implements INodeType {
             if (activate) {
                 console.log('BETTERCOMMERCE WEBHOOK: Force activation triggered');
                 
-                // Simulate activation
-                BetterCommerceWebhook.activations++;
+                // Create a hook context for manual activation
+                const hookContext = {
+                    getCredentials: this.getCredentials.bind(this),
+                    getNodeWebhookUrl: (this as any).getNodeWebhookUrl?.bind(this),
+                    getNodeParameter: this.getNodeParameter.bind(this),
+                    getWorkflowStaticData: this.getWorkflowStaticData.bind(this),
+                    getNode: (this as any).getNode?.bind(this),
+                    helpers: this.helpers,
+                } as unknown as IHookFunctions;
+
+                // Get the activate method directly from the class prototype
+                const activateMethod = BetterCommerceWebhook.prototype.activate;
+                
+                // Call activate with the proper context
+                await activateMethod.call(hookContext);
                 
                 // Store data for consistency
                 const nodeWebhookData = this.getWorkflowStaticData('node');
-               // nodeWebhookData.webhookUrl = 'FORCED_ACTIVATION';
                 nodeWebhookData.activatedAt = new Date().toISOString();
-                nodeWebhookData.activationCount = BetterCommerceWebhook.activations;
                 
                 // Try to get webhook URL even in execute
                 try {
@@ -199,9 +214,9 @@ export class BetterCommerceWebhook implements INodeType {
                 
                 return [[{
                     json: {
-                        message: 'FORCED ACTIVATION SUCCESS',
+                        message: 'MANUAL ACTIVATION SUCCESS',
                         timestamp: new Date().toISOString(),
-                        activationCount: BetterCommerceWebhook.activations
+                        webhookUrl: nodeWebhookData.webhookUrl || 'UNKNOWN'
                     }
                 }]];
             }
